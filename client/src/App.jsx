@@ -6,11 +6,13 @@ import HomePage from './pages/HomePage';
 import TrainingPage from './pages/TrainingPage';
 import PrepaPage from './pages/PrepaPage';
 import CompetitionsPage from './pages/CompetitionsPage'; 
+import ProfilePage from './pages/ProfilePage'; // <--- NOUVELLE PAGE
 
 // --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
+import CustomModal from './components/CustomModal';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
-import { FaTrophy } from 'react-icons/fa';
+import { FaTrophy, FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa'; // <--- NOUVELLES ICÔNES
 
 // --- PETIT COMPOSANT WRAPPER POUR L'ICÔNE ---
 const IconTrophy = () => (
@@ -35,11 +37,22 @@ function NavItem({ to, icon, label }) {
 
 function App() {
   const [user, setUser] = useState(null); 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false); // AuthModal
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // <--- MENU DÉROULANT
 
-  // --- 1. VÉRIFICATION DE LA CONNEXION (MERN) ---
+  // --- ÉTAT POUR LE CUSTOM MODAL (Confirmation) ---
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info',
+    onConfirm: null
+  });
+
+  const closeConfirmModal = () => setConfirmModal({ ...confirmModal, isOpen: false });
+
+  // --- VÉRIFICATION DE LA CONNEXION ---
   useEffect(() => {
-    // On regarde dans le navigateur si l'utilisateur est stocké
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
@@ -48,49 +61,89 @@ function App() {
     }
   }, []);
 
-  // --- 2. FONCTION DE DÉCONNEXION ---
+  // --- DÉCONNEXION ---
   const handleLogout = () => {
-    if(window.confirm("Voulez-vous vous déconnecter ?")) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-      window.location.href = "/"; // Retour à l'accueil
-    }
+    setIsDropdownOpen(false); // Ferme le menu
+    setConfirmModal({
+      isOpen: true,
+      title: 'Déconnexion',
+      message: 'Voulez-vous vraiment vous déconnecter ?',
+      type: 'danger', 
+      onConfirm: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        window.location.href = "/"; 
+      }
+    });
   };
 
   return (
     <BrowserRouter>
       
-      {/* Modale d'Authentification */}
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <CustomModal 
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        onConfirm={confirmModal.onConfirm}
+      />
+
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
 
       {/* --- BARRE DU HAUT --- */}
       <div className="top-bar">
         <div className="logo-box">B</div>
         
-        {/* --- ZONE PROFIL / CONNEXION --- */}
-        <div className="profile-chip" onClick={user ? handleLogout : () => setIsModalOpen(true)} style={{ cursor: 'pointer' }}>
-           {user ? (
-             // --- SI CONNECTÉ : HELLO PRÉNOM ---
-             <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#ccff00', marginRight: '10px' }}>
-                   Hello {user.name} 👋
-                </span>
-                <div className="avatar-circle">
-                  {/* On génère un avatar basé sur le prénom ou l'email */}
-                  <img 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-                    alt="Avatar" 
-                    style={{ width: '100%', borderRadius: '50%' }} 
-                  />
+        {/* --- ZONE PROFIL (WRAPPER RELATIF POUR LE DROPDOWN) --- */}
+        <div style={{ position: 'relative' }}>
+            
+            <div 
+                className="profile-chip" 
+                onClick={() => user ? setIsDropdownOpen(!isDropdownOpen) : setIsModalOpen(true)} 
+                style={{ cursor: 'pointer' }}
+            >
+               {user ? (
+                 <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#ccff00', marginRight: '10px' }}>
+                       Hello {user.name}
+                    </span>
+                    <div className="avatar-circle" style={{ overflow: 'hidden', background: '#000', border: '1px solid rgba(255,255,255,0.2)' }}>
+                      {/* LOGIQUE D'AFFICHAGE AVATAR */}
+                      {user.avatar ? (
+                          <img 
+                            src={user.avatar} 
+                            alt="Avatar" 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                      ) : (
+                          // ILLUSTRATION SOMBRE "PAS DE PHOTO"
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a', color: '#444' }}>
+                            <FaUserCircle size={20} />
+                          </div>
+                      )}
+                    </div>
+                 </div>
+               ) : (
+                 <span style={{ fontSize: '0.9rem', fontWeight: 'bold', padding: '0 10px', color: 'white' }}>
+                   Connexion
+                 </span>
+               )}
+            </div>
+
+            {/* --- MENU DÉROULANT --- */}
+            {isDropdownOpen && user && (
+                <div className="dropdown-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
+                    <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
+                        <FaUser /> Mon Profil
+                    </Link>
+                    <div className="dropdown-item danger" onClick={handleLogout}>
+                        <FaSignOutAlt /> Déconnexion
+                    </div>
                 </div>
-             </div>
-           ) : (
-             // --- SI DÉCONNECTÉ : BOUTON CONNEXION ---
-             <span style={{ fontSize: '0.9rem', fontWeight: 'bold', padding: '0 10px', color: 'white' }}>
-               Connexion
-             </span>
-           )}
+            )}
+
         </div>
       </div>
 
@@ -101,6 +154,7 @@ function App() {
           <Route path="/prepa" element={<PrepaPage />} />
           <Route path="/trainings" element={<TrainingPage />} />
           <Route path="/competitions" element={<CompetitionsPage />} />
+          <Route path="/profile" element={<ProfilePage setUser={setUser} />} /> {/* ROUTE PROFIL AJOUTÉE */}
         </Routes>
       </div>
 

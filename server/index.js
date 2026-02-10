@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer'); // <--- NOUVEAU
+const axios = require('axios');   // <--- NOUVEAU
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
@@ -13,12 +15,19 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Configuration Multer (Pour gérer l'upload d'images en mémoire)
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Limite 5MB
+});
+
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connecté'))
   .catch(err => console.error('❌ Erreur MongoDB:', err));
 
-// Configuration de l'IA Gemini
+// Configuration de l'IA Gemini (Pour le texte)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
@@ -31,6 +40,7 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  avatar: { type: String, default: "" }, // <--- AJOUTÉ : Pour stocker l'URL de l'avatar
   date: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', UserSchema);
@@ -51,7 +61,7 @@ const PhysicalProgramSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, default: Date.now },
   focus: String,
-  content: Object // Stocke le JSON complet (warmup, main, cooldown)
+  content: Object 
 });
 const PhysicalProgram = mongoose.model('PhysicalProgram', PhysicalProgramSchema);
 
@@ -83,7 +93,7 @@ const auth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // On ajoute l'utilisateur à la requête
+    req.user = decoded; 
     next();
   } catch (err) {
     res.status(401).json({ msg: 'Token invalide' });
@@ -97,7 +107,6 @@ const auth = (req, res, next) => {
 
 // --- A. AUTHENTIFICATION ---
 
-// Inscription
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -112,13 +121,13 @@ app.post('/api/auth/register', async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    // On renvoie aussi l'avatar (vide au début)
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     res.status(500).send('Erreur serveur');
   }
 });
 
-// Connexion
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -129,36 +138,33 @@ app.post('/api/auth/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: 'Identifiants invalides' });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    // On renvoie l'avatar actuel
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
   } catch (err) {
     res.status(500).send('Erreur serveur');
   }
 });
 
 
-// --- B. DASHBOARD (NOUVEAU : Résumé IA Accueil) ---
+// --- B. DASHBOARD ---
 
 app.get('/api/home/summary', auth, async (req, res) => {
   try {
-    // Récupérer les 3 dernières séances
     const recentTrainings = await Training.find({ userId: req.user.id }).sort({ date: -1 }).limit(3);
 
     if (recentTrainings.length === 0) {
       return res.json({ summary: "Commence ton journal pour activer le coach !" });
     }
 
-    // Préparer le texte pour l'IA
     const trainingsText = recentTrainings.map(t => 
       `- ${t.theme} (Note: ${t.rating}/10, Sensations: "${t.notes}")`
     ).join('\n');
 
-    // Prompt Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // J'ai mis un modèle standard
     const prompt = `
       Agis comme un coach sportif personnel. Voici les 3 dernières séances :
       ${trainingsText}
-      Analyse la forme actuelle en 1 phrase. Ajoute 1 phrase de motivation intense.
-      Max 30 mots total. Tutoiement. Pas de gras/markdown.
+      Analyse la forme actuelle en 4/5 phrases détaillées. Ajoute 1 phrase de motivation intense. Tutoiement. Pas de gras/markdown.
     `;
 
     const result = await model.generateContent(prompt);
@@ -171,7 +177,7 @@ app.get('/api/home/summary', auth, async (req, res) => {
 });
 
 
-// --- C. ENTRAÎNEMENTS (JOURNAL) ---
+// --- C. ENTRAÎNEMENTS ---
 
 app.get('/api/trainings', auth, async (req, res) => {
   try {
@@ -187,7 +193,7 @@ app.post('/api/trainings', auth, async (req, res) => {
   let aiAdvice = "Pas d'analyse disponible.";
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Coach badminton. Séance: ${theme}. Notes: "${notes}". Note: ${rating}/10. Feedback court et technique (max 3 phrases).`;
     const result = await model.generateContent(prompt);
     aiAdvice = result.response.text();
@@ -208,15 +214,11 @@ app.post('/api/trainings', auth, async (req, res) => {
   }
 });
 
-// Route DELETE (Celle qui manquait pour supprimer les fantômes)
 app.delete('/api/trainings/:id', auth, async (req, res) => {
   try {
     const training = await Training.findById(req.params.id);
     if (!training) return res.status(404).json({ msg: 'Non trouvé' });
-
-    if (training.userId.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'Non autorisé' });
-    }
+    if (training.userId.toString() !== req.user.id) return res.status(401).json({ msg: 'Non autorisé' });
 
     await Training.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Supprimé' });
@@ -226,13 +228,12 @@ app.delete('/api/trainings/:id', auth, async (req, res) => {
 });
 
 
-// --- D. PRÉPA PHYSIQUE (GÉNÉRATEUR) ---
+// --- D. PRÉPA PHYSIQUE ---
 
-// Générer (IA avec nettoyage JSON)
 app.post('/api/prepa', auth, async (req, res) => {
   const { focus } = req.body;
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       Coach physique expert. Séance 45 min : "${focus}".
       RÉPONSE: UNIQUEMENT un JSON valide. Pas de texte avant/après.
@@ -241,7 +242,6 @@ app.post('/api/prepa', auth, async (req, res) => {
 
     const result = await model.generateContent(prompt);
     let text = result.response.text();
-    // Nettoyage agressif du markdown
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
     const program = JSON.parse(text);
@@ -252,7 +252,6 @@ app.post('/api/prepa', auth, async (req, res) => {
   }
 });
 
-// Sauvegarder
 app.post('/api/prepa/save', auth, async (req, res) => {
   const { focus, program } = req.body;
   try {
@@ -268,7 +267,6 @@ app.post('/api/prepa/save', auth, async (req, res) => {
   }
 });
 
-// Historique
 app.get('/api/prepa/history', auth, async (req, res) => {
   try {
     const history = await PhysicalProgram.find({ userId: req.user.id }).sort({ date: -1 });
@@ -278,7 +276,6 @@ app.get('/api/prepa/history', auth, async (req, res) => {
   }
 });
 
-// Supprimer
 app.delete('/api/prepa/:id', auth, async (req, res) => {
   try {
     const prog = await PhysicalProgram.findById(req.params.id);
@@ -308,8 +305,7 @@ app.post('/api/competitions', auth, async (req, res) => {
   try {
     const { category, tableau, result, scores, description, videoUrl } = req.body;
     
-    // IA Compétition
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const scoreStr = `Set 1: ${scores.set1.me}-${scores.set1.opp}, Set 2: ${scores.set2.me}-${scores.set2.opp}`;
     const prompt = `Coach badminton. Match: ${category} ${tableau}. Score: ${scoreStr}. Résultat: ${result}. Ressenti: "${description}". Analyse et conseil court.`;
     
@@ -342,6 +338,53 @@ app.delete('/api/competitions/:id', auth, async (req, res) => {
     res.json({ msg: 'Supprimé' });
   } catch (err) {
     res.status(500).json({ message: "Erreur suppression" });
+  }
+});
+
+
+// =================================================================
+// F. UTILISATEUR & AVATAR (NOUVELLE SECTION)
+// =================================================================
+
+// @route   POST api/user/generate-avatar
+app.post('/api/user/generate-avatar', auth, upload.single('image'), async (req, res) => {
+  try {
+    // 1. Validation de l'image
+    if (!req.file) {
+      return res.status(400).json({ msg: 'Aucune image fournie' });
+    }
+
+    const prompt = req.body.prompt;
+    console.log("📸 Image reçue, envoi à l'IA...");
+
+    // -------------------------------------------------------------
+    // LOGIQUE DE GÉNÉRATION (À ADAPTER SELON TON API D'IMAGE)
+    // -------------------------------------------------------------
+    // Si tu as une vraie API d'image (ex: Stable Diffusion, OpenAI DALL-E) :
+    // const base64Image = req.file.buffer.toString('base64');
+    // const aiResponse = await axios.post('URL_DE_TON_API_IMAGE', { ... });
+    // const newAvatarUrl = aiResponse.data.url;
+
+    // --- MODE SIMULATION (POUR QUE ÇA MARCHE DIRECT) ---
+    // On génère un avatar unique via Dicebear pour voir le changement immédiatement
+    const randomSeed = Math.floor(Math.random() * 99999) + "3d"; 
+    // Utilisation d'un style différent (ex: 'notionists' ou 'avataaars') ou params différents
+    const newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.user.id}-${Date.now()}&backgroundColor=b6e3f4`;
+    // -------------------------------------------------------------
+
+    // 2. Mise à jour en Base de Données
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+
+    user.avatar = newAvatarUrl;
+    await user.save();
+
+    console.log("✅ Avatar mis à jour :", newAvatarUrl);
+    res.json({ avatarUrl: newAvatarUrl });
+
+  } catch (err) {
+    console.error("Erreur Avatar:", err);
+    res.status(500).send('Erreur lors de la génération de l\'avatar');
   }
 });
 

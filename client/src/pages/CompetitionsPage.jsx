@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// J'ai ajouté FaChevronDown et FaChevronUp pour les flèches
 import { FaTrophy, FaYoutube, FaRobot, FaMedal, FaUsers, FaSave, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import CustomModal from '../components/CustomModal'; // <--- 1. IMPORT DU MODAL
 
 const CompetitionsPage = () => {
   // --- ÉTATS ---
@@ -20,10 +20,20 @@ const CompetitionsPage = () => {
 
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // --- NOUVEL ÉTAT : Pour gérer quels matchs sont ouverts ---
-  // Format : { "id_du_match": true, "autre_id": false }
   const [expandedMatches, setExpandedMatches] = useState({});
+
+  // --- 2. NOUVEL ÉTAT POUR LE MODAL ---
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info', // 'info' ou 'danger'
+    onConfirm: null // null = juste un bouton OK, sinon = bouton Annuler/Confirmer
+  });
+
+  // Fonction pour fermer le modal
+  const closeModal = () => setModal({ ...modal, isOpen: false });
+
 
   // --- CHARGEMENT ---
   useEffect(() => { fetchMatches(); }, []);
@@ -50,13 +60,20 @@ const CompetitionsPage = () => {
     }));
   };
 
+  // --- 3. SAVE MODIFIÉ AVEC MODAL ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     const token = localStorage.getItem('token');
     if (!token) {
-        alert("Tu dois être connecté !");
+        // Remplacement de alert()
+        setModal({
+            isOpen: true,
+            title: 'Authentification requise',
+            message: 'Tu dois être connecté pour enregistrer un match.',
+            type: 'info'
+        });
         setLoading(false);
         return;
     }
@@ -65,34 +82,54 @@ const CompetitionsPage = () => {
       await axios.post('http://localhost:5000/api/competitions', formData, {
         headers: { 'x-auth-token': token }
       });
+      
       fetchMatches(); 
+      
       setFormData({
         category: 'Tournoi', tableau: 'Simple', result: 'Victoire',
         description: '', videoUrl: '',
         scores: { set1: { me: '', opp: '' }, set2: { me: '', opp: '' }, set3: { me: '', opp: '' } }
       });
+
+      // Notification de succès
+      setModal({
+          isOpen: true,
+          title: 'Match enregistré !',
+          message: 'Ton match a été ajouté à l\'historique avec succès.',
+          type: 'info'
+      });
+
     } catch (err) { console.error("Erreur envoi:", err); }
     setLoading(false);
   };
 
-  const deleteMatch = async (id, e) => {
-    e.stopPropagation(); // Empêche d'ouvrir/fermer la carte quand on clique sur supprimer
-    if (!window.confirm("Supprimer ce match ?")) return;
-
-    const token = localStorage.getItem('token');
-    try {
-      await axios.delete(`http://localhost:5000/api/competitions/${id}`, {
-        headers: { 'x-auth-token': token }
-      });
-      setMatches(matches.filter(m => m._id !== id));
-    } catch (err) { console.error("Erreur suppression:", err); }
+  // --- 4. DELETE MODIFIÉ AVEC MODAL ---
+  const deleteMatch = (id, e) => {
+    e.stopPropagation(); // Stop l'ouverture de l'accordéon
+    
+    // Remplacement de window.confirm()
+    setModal({
+        isOpen: true,
+        title: 'Supprimer ce match ?',
+        message: 'Cette action est définitive. Veux-tu vraiment retirer ce match de ton historique ?',
+        type: 'danger', // Active le bouton rouge
+        onConfirm: async () => {
+            // La logique de suppression se lance seulement ici
+            const token = localStorage.getItem('token');
+            try {
+              await axios.delete(`http://localhost:5000/api/competitions/${id}`, {
+                headers: { 'x-auth-token': token }
+              });
+              setMatches(prev => prev.filter(m => m._id !== id));
+            } catch (err) { console.error("Erreur suppression:", err); }
+        }
+    });
   };
 
-  // --- NOUVELLE FONCTION : BASCULER L'AFFICHAGE ---
   const toggleMatch = (id) => {
     setExpandedMatches(prev => ({
       ...prev,
-      [id]: !prev[id] // Inverse l'état (ouvert -> fermé, fermé -> ouvert)
+      [id]: !prev[id]
     }));
   };
 
@@ -102,10 +139,20 @@ const CompetitionsPage = () => {
     return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
   };
 
-  // --- STYLE ---
+  // --- RENDU ---
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px 100px 20px' }}>
       
+      {/* --- INTEGRATION DU COMPOSANT MODAL --- */}
+      <CustomModal 
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm}
+      />
+
       <style>{`
         .input-dark {
             background: rgba(255, 255, 255, 0.05);
@@ -208,7 +255,6 @@ const CompetitionsPage = () => {
           <div 
             key={match._id} 
             className="card" 
-            // On ajoute un curseur pointer pour montrer que c'est cliquable
             onClick={() => toggleMatch(match._id)}
             style={{ 
               background: '#1a1a1a', 
@@ -216,7 +262,7 @@ const CompetitionsPage = () => {
               borderRadius: '16px', 
               borderLeft: `4px solid ${match.result === 'Victoire' ? '#4ade80' : '#f87171'}`,
               boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-              cursor: 'pointer', // Indique que c'est cliquable
+              cursor: 'pointer', 
               transition: 'background 0.2s'
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = '#222'}
@@ -243,12 +289,10 @@ const CompetitionsPage = () => {
                   {match.scores.set2.me && ` / ${match.scores.set2.me}-${match.scores.set2.opp}`}
                 </span>
 
-                {/* Icône Chevron (Indique si ouvert ou fermé) */}
                 <div style={{ color: '#888' }}>
                    {expandedMatches[match._id] ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
 
-                {/* Bouton Poubelle (Stop propagation) */}
                 <button onClick={(e) => deleteMatch(match._id, e)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}>
                   <FaTrash size={16} color="#444" onMouseOver={(e) => e.currentTarget.style.color = '#ef4444'} onMouseOut={(e) => e.currentTarget.style.color = '#444'} />
                 </button>
