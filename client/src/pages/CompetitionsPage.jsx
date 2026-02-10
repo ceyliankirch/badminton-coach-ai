@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrophy, FaYoutube, FaRobot, FaMedal, FaUsers, FaSave, FaTrash } from 'react-icons/fa';
+// J'ai ajouté FaChevronDown et FaChevronUp pour les flèches
+import { FaTrophy, FaYoutube, FaRobot, FaMedal, FaUsers, FaSave, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 const CompetitionsPage = () => {
   // --- ÉTATS ---
@@ -19,13 +20,22 @@ const CompetitionsPage = () => {
 
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // --- NOUVEL ÉTAT : Pour gérer quels matchs sont ouverts ---
+  // Format : { "id_du_match": true, "autre_id": false }
+  const [expandedMatches, setExpandedMatches] = useState({});
 
   // --- CHARGEMENT ---
   useEffect(() => { fetchMatches(); }, []);
 
   const fetchMatches = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     try {
-      const res = await axios.get('http://localhost:5000/api/competitions');
+      const res = await axios.get('http://localhost:5000/api/competitions', {
+        headers: { 'x-auth-token': token }
+      });
       setMatches(res.data);
     } catch (err) { console.error("Erreur fetch:", err); }
   };
@@ -43,26 +53,47 @@ const CompetitionsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("Tu dois être connecté !");
+        setLoading(false);
+        return;
+    }
+
     try {
-      await axios.post('http://localhost:5000/api/competitions', formData);
-      fetchMatches();
-      setFormData(prev => ({
-        ...prev,
-        description: '',
-        videoUrl: '',
+      await axios.post('http://localhost:5000/api/competitions', formData, {
+        headers: { 'x-auth-token': token }
+      });
+      fetchMatches(); 
+      setFormData({
+        category: 'Tournoi', tableau: 'Simple', result: 'Victoire',
+        description: '', videoUrl: '',
         scores: { set1: { me: '', opp: '' }, set2: { me: '', opp: '' }, set3: { me: '', opp: '' } }
-      }));
+      });
     } catch (err) { console.error("Erreur envoi:", err); }
     setLoading(false);
   };
 
-  const deleteMatch = async (id) => {
-    if (window.confirm("Supprimer ce match ?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/competitions/${id}`);
-        fetchMatches();
-      } catch (err) { console.error("Erreur suppression:", err); }
-    }
+  const deleteMatch = async (id, e) => {
+    e.stopPropagation(); // Empêche d'ouvrir/fermer la carte quand on clique sur supprimer
+    if (!window.confirm("Supprimer ce match ?")) return;
+
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`http://localhost:5000/api/competitions/${id}`, {
+        headers: { 'x-auth-token': token }
+      });
+      setMatches(matches.filter(m => m._id !== id));
+    } catch (err) { console.error("Erreur suppression:", err); }
+  };
+
+  // --- NOUVELLE FONCTION : BASCULER L'AFFICHAGE ---
+  const toggleMatch = (id) => {
+    setExpandedMatches(prev => ({
+      ...prev,
+      [id]: !prev[id] // Inverse l'état (ouvert -> fermé, fermé -> ouvert)
+    }));
   };
 
   const getEmbedUrl = (url) => {
@@ -71,37 +102,56 @@ const CompetitionsPage = () => {
     return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
   };
 
+  // --- STYLE ---
   return (
-    <div className="competitions-wrapper">
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px 100px 20px' }}>
+      
       <style>{`
-        .competitions-wrapper { padding: 20px; max-width: 800px; margin: 0 auto; color: white; padding-bottom: 100px; }
-        .section-title { font-size: 2rem; font-weight: 800; background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+        .input-dark {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-dark:focus { border-color: #ccff00; }
         
-        .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 24px; margin-bottom: 25px; }
-        .input-dark { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; padding: 12px; width: 100%; outline: none; }
+        .choice-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #ccc;
+            cursor: pointer;
+            text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
         
-        .horizontal-group { display: flex; gap: 12px; margin-bottom: 20px; }
-        .choice-btn { flex: 1; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; color: #94a3b8; }
-        .choice-btn.active-tournoi { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.15); color: #c4b5fd; }
-        .choice-btn.active-win { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-        .choice-btn.active-lose { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); color: #f87171; }
-        
-        .score-box { background: rgba(0, 0, 0, 0.3); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .score-grid { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; gap: 8px; align-items: center; text-align: center; }
-        .btn-neon { width: 100%; background: linear-gradient(135deg, #7c3aed, #2563eb); border: none; padding: 15px; border-radius: 12px; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3); transition: 0.3s; }
-        
-        .match-card { border-left: 4px solid #334155; }
-        .match-card.win { border-left-color: #10b981; }
-        .match-card.lose { border-left-color: #ef4444; }
+        .choice-btn.active-tournoi { border-color: #ccff00; color: #ccff00; background: rgba(204, 255, 0, 0.1); font-weight: bold; }
+        .choice-btn.active-win { border-color: #4ade80; color: #4ade80; background: rgba(74, 222, 128, 0.1); font-weight: bold; }
+        .choice-btn.active-lose { border-color: #f87171; color: #f87171; background: rgba(248, 113, 113, 0.1); font-weight: bold; }
+
+        .score-grid { display: grid; grid-template-columns: 60px 1fr 1fr 1fr; gap: 10px; align-items: center; text-align: center; }
+        .score-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
       `}</style>
 
-      <h1 className="section-title">
-        <FaTrophy style={{ color: '#fbbf24' }} /> Compétitions
-      </h1>
+      {/* --- HEADER --- */}
+      <header style={{ marginBottom: '30px', textAlign: 'center' }}>
+        <div style={{ width: '50px', height: '50px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto', color: '#fbbf24' }}>
+          <FaTrophy size={24} />
+        </div>
+        <h1 style={{ fontSize: '1.8rem', margin: 0, color: 'white' }}>Compétitions</h1>
+        <p style={{ color: '#888', marginTop: '5px' }}>Suis tes matchs et analyse tes stats</p>
+      </header>
 
-      <div className="glass-card">
-        {/* Type Sélection */}
-        <div className="horizontal-group">
+      {/* --- FORMULAIRE D'AJOUT --- */}
+      <div className="card" style={{ background: '#1a1a1a', padding: '25px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
           <div className={`choice-btn ${formData.category === 'Tournoi' ? 'active-tournoi' : ''}`} onClick={() => setFormData({...formData, category:'Tournoi'})}>
             <FaMedal /> Tournoi
           </div>
@@ -110,12 +160,11 @@ const CompetitionsPage = () => {
           </div>
         </div>
 
-        <select name="tableau" value={formData.tableau} onChange={handleChange} className="input-dark" style={{marginBottom: '20px'}}>
-          <option>Simple</option><option>Double</option><option>Mixte</option>
+        <select name="tableau" value={formData.tableau} onChange={handleChange} className="input-dark" style={{ marginBottom: '20px', cursor: 'pointer' }}>
+          <option>Simple Homme</option><option>Simple Dame</option><option>Double Homme</option><option>Double Dame</option><option>Mixte</option>
         </select>
 
-        {/* Résultat Sélection */}
-        <div className="horizontal-group">
+        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
           <div className={`choice-btn ${formData.result === 'Victoire' ? 'active-win' : ''}`} onClick={() => setFormData({...formData, result:'Victoire'})}>
             VICTOIRE 🏆
           </div>
@@ -124,77 +173,118 @@ const CompetitionsPage = () => {
           </div>
         </div>
 
-        {/* Grille de Scores */}
-        <div className="score-box">
+        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="score-grid">
-            <div /> <div style={{fontSize:'0.7rem', color:'#64748b'}}>SET 1</div> <div style={{fontSize:'0.7rem', color:'#64748b'}}>SET 2</div> <div style={{fontSize:'0.7rem', color:'#64748b'}}>SET 3</div>
-            <div style={{color: '#60a5fa', fontWeight:'bold', fontSize:'0.8rem'}}>MOI</div>
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="21" value={formData.scores.set1.me} onChange={(e)=>handleScoreChange('set1','me',e.target.value)} />
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="21" value={formData.scores.set2.me} onChange={(e)=>handleScoreChange('set2','me',e.target.value)} />
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="-" value={formData.scores.set3.me} onChange={(e)=>handleScoreChange('set3','me',e.target.value)} />
-            <div style={{color: '#f87171', fontWeight:'bold', fontSize:'0.8rem'}}>ADV</div>
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="15" value={formData.scores.set1.opp} onChange={(e)=>handleScoreChange('set1','opp',e.target.value)} />
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="15" value={formData.scores.set2.opp} onChange={(e)=>handleScoreChange('set2','opp',e.target.value)} />
-            <input type="text" className="input-dark" style={{textAlign:'center', padding:'8px'}} placeholder="-" value={formData.scores.set3.opp} onChange={(e)=>handleScoreChange('set3','opp',e.target.value)} />
+            <div /> <div className="score-label">SET 1</div> <div className="score-label">SET 2</div> <div className="score-label">SET 3</div>
+            <div style={{ fontWeight: 'bold', color: '#ccff00', fontSize: '0.9rem' }}>MOI</div>
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="21" value={formData.scores.set1.me} onChange={(e)=>handleScoreChange('set1','me',e.target.value)} />
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="21" value={formData.scores.set2.me} onChange={(e)=>handleScoreChange('set2','me',e.target.value)} />
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="-" value={formData.scores.set3.me} onChange={(e)=>handleScoreChange('set3','me',e.target.value)} />
+            <div style={{ fontWeight: 'bold', color: '#f87171', fontSize: '0.9rem' }}>ADV</div>
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="19" value={formData.scores.set1.opp} onChange={(e)=>handleScoreChange('set1','opp',e.target.value)} />
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="19" value={formData.scores.set2.opp} onChange={(e)=>handleScoreChange('set2','opp',e.target.value)} />
+            <input type="text" className="input-dark" style={{textAlign:'center'}} placeholder="-" value={formData.scores.set3.opp} onChange={(e)=>handleScoreChange('set3','opp',e.target.value)} />
           </div>
         </div>
 
-        <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Décris ton match..." className="input-dark" style={{minHeight:'80px', marginBottom:'15px'}} />
+        <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Ressenti, stratégie, points forts/faibles..." className="input-dark" style={{ minHeight: '80px', marginBottom: '15px', resize: 'vertical' }} />
         
-        <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px'}}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <FaYoutube size={24} color="#ef4444" />
-          <input type="text" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Lien Vidéo YouTube" className="input-dark" />
+          <input type="text" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Coller le lien YouTube ici" className="input-dark" />
         </div>
 
-        <button onClick={handleSubmit} disabled={loading} className="btn-neon">
-          {loading ? 'Analyse en cours...' : <><FaSave /> ENREGISTRER LE MATCH</>}
+        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: '100%', padding: '15px', background: '#ccff00', color: 'black', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
+          {loading ? 'Analyse IA en cours...' : <span style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}}><FaSave /> ENREGISTRER LE MATCH</span>}
         </button>
       </div>
 
-      {/* --- HISTORIQUE --- */}
-      {matches.map((match) => (
-        <div key={match._id} className={`glass-card match-card ${match.result === 'Victoire' ? 'win' : 'lose'}`}>
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'15px'}}>
-            <div>
-              <span style={{fontWeight:'bold', color: match.result === 'Victoire' ? '#4ade80' : '#f87171'}}>
-                {match.result.toUpperCase()}
-              </span>
-              <span style={{marginLeft:'10px', fontSize:'0.8rem', color:'#94a3b8'}}>
-                {match.category} - {match.tableau}
-              </span>
-            </div>
+      {/* --- HISTORIQUE (ACCORDÉON) --- */}
+      <h3 style={{ fontSize: '1.2rem', marginBottom: '20px', color: '#fff' }}>Historique des Matchs</h3>
+      {matches.length === 0 && <p style={{color: '#666', textAlign: 'center'}}>Aucun match enregistré.</p>}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {matches.map((match) => (
+          <div 
+            key={match._id} 
+            className="card" 
+            // On ajoute un curseur pointer pour montrer que c'est cliquable
+            onClick={() => toggleMatch(match._id)}
+            style={{ 
+              background: '#1a1a1a', 
+              padding: '20px', 
+              borderRadius: '16px', 
+              borderLeft: `4px solid ${match.result === 'Victoire' ? '#4ade80' : '#f87171'}`,
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+              cursor: 'pointer', // Indique que c'est cliquable
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#222'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#1a1a1a'}
+          >
             
-            <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-              <span style={{background:'rgba(255,255,255,0.05)', padding:'5px 12px', borderRadius:'8px', fontSize:'0.9rem', fontFamily:'monospace'}}>
-                {match.scores.set1.me}-{match.scores.set1.opp} / {match.scores.set2.me}-{match.scores.set2.opp}
-                {match.scores.set3.me && ` / ${match.scores.set3.me}-${match.scores.set3.opp}`}
-              </span>
-
-              {/* BOUTON SUPPRIMER avec ta classe et icône rouge */}
-              <button onClick={() => deleteMatch(match._id)} className="delete-btn">
-                <FaTrash size={14} color="#ef4444" />
-              </button>
-            </div>
-          </div>
-
-          <p style={{fontSize:'0.9rem', color:'#cbd5e1', fontStyle:'italic', marginBottom:'15px'}}>"{match.description}"</p>
-          
-          {match.aiFeedback && (
-            <div style={{background:'rgba(96, 165, 250, 0.05)', padding:'15px', borderRadius:'12px', border:'1px solid rgba(96, 165, 250, 0.15)'}}>
-              <div style={{display:'flex', alignItems:'center', gap:'8px', color:'#60a5fa', fontWeight:'bold', marginBottom:'5px', fontSize:'0.9rem'}}>
-                <FaRobot /> Coach IA
+            {/* --- HEADER (Toujours visible) --- */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: match.result === 'Victoire' ? '#4ade80' : '#f87171', display: 'block', marginBottom: '4px' }}>
+                  {match.result.toUpperCase()}
+                </span>
+                <span style={{ fontSize: '0.9rem', color: '#ccc' }}>
+                  {match.category} - {match.tableau}
+                </span>
+                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '2px' }}>
+                  {new Date(match.date).toLocaleDateString()}
+                </div>
               </div>
-              <p style={{fontSize:'0.85rem', lineHeight:'1.4', color:'#bfdbfe'}}>{match.aiFeedback}</p>
-            </div>
-          )}
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'monospace', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  {match.scores.set1.me}-{match.scores.set1.opp}
+                  {match.scores.set2.me && ` / ${match.scores.set2.me}-${match.scores.set2.opp}`}
+                </span>
 
-          {match.videoUrl && getEmbedUrl(match.videoUrl) && (
-            <div style={{marginTop:'15px', borderRadius:'12px', overflow:'hidden'}}>
-              <iframe src={getEmbedUrl(match.videoUrl)} width="100%" height="200" frameBorder="0" allowFullScreen title="vid" />
+                {/* Icône Chevron (Indique si ouvert ou fermé) */}
+                <div style={{ color: '#888' }}>
+                   {expandedMatches[match._id] ? <FaChevronUp /> : <FaChevronDown />}
+                </div>
+
+                {/* Bouton Poubelle (Stop propagation) */}
+                <button onClick={(e) => deleteMatch(match._id, e)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '5px' }}>
+                  <FaTrash size={16} color="#444" onMouseOver={(e) => e.currentTarget.style.color = '#ef4444'} onMouseOut={(e) => e.currentTarget.style.color = '#444'} />
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-      ))}
+
+            {/* --- DÉTAILS (Visible seulement si ouvert) --- */}
+            {expandedMatches[match._id] && (
+              <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px', animation: 'fadeIn 0.3s' }}>
+                
+                {match.description && (
+                    <p style={{ fontSize: '0.95rem', color: '#ddd', fontStyle: 'italic', marginBottom: '15px', lineHeight: '1.5' }}>
+                        "{match.description}"
+                    </p>
+                )}
+                
+                {match.aiFeedback && (
+                  <div style={{ background: 'rgba(204, 255, 0, 0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(204, 255, 0, 0.2)', marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccff00', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9rem' }}>
+                      <FaRobot /> Coach IA
+                    </div>
+                    <p style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#eee', margin: 0 }}>{match.aiFeedback}</p>
+                  </div>
+                )}
+
+                {match.videoUrl && getEmbedUrl(match.videoUrl) && (
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', marginTop: '10px' }}>
+                    <iframe src={getEmbedUrl(match.videoUrl)} width="100%" height="300" frameBorder="0" allowFullScreen title="Match Video" />
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

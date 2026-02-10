@@ -1,62 +1,67 @@
 import { useState } from 'react';
-import { auth, googleProvider, appleProvider } from '../firebase';
-import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import axios from 'axios';
 
 export default function AuthModal({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true); // true = Login, false = Signup
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState(''); // Pour le bandeau vert
   
   // Champs du formulaire
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
-  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState(''); // On utilise firstName maintenant
 
   if (!isOpen) return null;
 
   // --- LOGIQUE DE SÉCURITÉ ---
   const validatePassword = (pass) => {
-    // Min 8 caractères, 1 chiffre, 1 majuscule (optionnel mais recommandé)
-    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    // Regex corrigée : Accepte tout (.), force 1 chiffre (\d), min 8 caractères
+    const regex = /^(?=.*\d).{8,}$/;
     return regex.test(pass);
   };
 
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg(''); // Reset du message de succès
 
     try {
       if (isLogin) {
         // --- CONNEXION ---
-        await signInWithEmailAndPassword(auth, email, password);
-        onClose(); // On ferme le modal si succès
+        const res = await axios.post('http://localhost:5000/api/auth/login', {
+          email,
+          password
+        });
+
+        // Stockage
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+
+        // Fermeture et refresh
+        onClose(); 
+        window.location.reload(); 
+
       } else {
         // --- INSCRIPTION ---
         if (password !== confirmPass) throw new Error("Les mots de passe ne correspondent pas.");
         if (!validatePassword(password)) throw new Error("Le mot de passe doit contenir 8 caractères et 1 chiffre.");
-        if (username.length < 3) throw new Error("Le nom d'utilisateur est trop court.");
+        if (firstName.length < 2) throw new Error("Le prénom est trop court.");
 
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        // On ajoute le nom d'utilisateur au profil Firebase
-        await updateProfile(userCredential.user, { displayName: username });
-        onClose();
+        // Envoi au backend (le backend attend 'name', on lui envoie firstName)
+        await axios.post('http://localhost:5000/api/auth/register', {
+          name: firstName, 
+          email,
+          password
+        });
+
+        // SUCCÈS : On ne ferme pas, on redirige vers le Login avec un bandeau
+        setSuccessMsg("Compte créé avec succès ! Connectez-vous.");
+        setIsLogin(true); // Bascule vers l'écran de connexion
+        setPassword(''); // On vide le mot de passe par sécurité
       }
     } catch (err) {
-      // Traduction basique des erreurs Firebase
-      if (err.code === 'auth/email-already-in-use') setError("Cet email est déjà utilisé.");
-      else if (err.code === 'auth/wrong-password') setError("Mot de passe incorrect.");
-      else if (err.code === 'auth/user-not-found') setError("Aucun compte avec cet email.");
-      else setError(err.message);
-    }
-  };
-
-  const handleSocialLogin = async (provider) => {
-    try {
-      await signInWithPopup(auth, provider);
-      onClose();
-    } catch (err) {
-      setError("Erreur connexion sociale");
-      console.error(err);
+      setError(err.response?.data?.message || err.response?.data?.msg || err.message || "Une erreur est survenue");
     }
   };
 
@@ -69,45 +74,34 @@ export default function AuthModal({ isOpen, onClose }) {
           {isLogin ? 'Bon retour Coach !' : 'Rejoins la Team 🚀'}
         </h2>
 
-        {/* --- ERREUR --- */}
+        {/* --- BANDEAU SUCCÈS (Nouveau) --- */}
+        {successMsg && <div style={successStyle}>{successMsg}</div>}
+
+        {/* --- BANDEAU ERREUR --- */}
         {error && <div style={errorStyle}>{error}</div>}
 
-        {/* --- SOCIAL BUTTONS --- */}
-        <div style={{ display: 'grid', gap: '10px', marginBottom: '20px' }}>
-          <button style={googleBtnStyle} onClick={() => handleSocialLogin(googleProvider)}>
-            <img src="https://img.icons8.com/color/48/google-logo.png" width="20" alt="G" /> 
-            Continuer avec Google
-          </button>
-          <button style={appleBtnStyle} onClick={() => handleSocialLogin(appleProvider)}>
-            <img src="https://img.icons8.com/ios-filled/50/ffffff/mac-os.png" width="20" alt="A" />
-            Continuer avec Apple
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '20px 0', color: '#666' }}>
-          <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
-          <span>OU</span>
-          <div style={{ flex: 1, height: '1px', background: '#333' }}></div>
-        </div>
-
-        {/* --- FORMULAIRE CLASSIQUE --- */}
+        {/* --- FORMULAIRE --- */}
         <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           
+          {/* Champ Prénom au lieu de Nom d'utilisateur */}
           {!isLogin && (
             <input 
-              type="text" placeholder="Nom d'utilisateur" required 
-              value={username} onChange={e => setUsername(e.target.value)}
+              type="text" placeholder="Ton Prénom" required 
+              value={firstName} onChange={e => setFirstName(e.target.value)}
+              style={{ padding: '10px', borderRadius: '8px', border: 'none' }}
             />
           )}
           
           <input 
             type="email" placeholder="Email" required 
             value={email} onChange={e => setEmail(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: 'none' }}
           />
           
           <input 
             type="password" placeholder="Mot de passe" required 
             value={password} onChange={e => setPassword(e.target.value)}
+            style={{ padding: '10px', borderRadius: '8px', border: 'none' }}
           />
 
           {!isLogin && (
@@ -115,6 +109,7 @@ export default function AuthModal({ isOpen, onClose }) {
               <input 
                 type="password" placeholder="Confirmer le mot de passe" required 
                 value={confirmPass} onChange={e => setConfirmPass(e.target.value)}
+                style={{ padding: '10px', borderRadius: '8px', border: 'none' }}
               />
               <small style={{ color: '#888', fontSize: '0.75rem' }}>
                 Politique : 8 caractères min, au moins 1 chiffre.
@@ -122,8 +117,8 @@ export default function AuthModal({ isOpen, onClose }) {
             </>
           )}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>
-            {isLogin ? 'Se connecter' : 'Créer un compte'}
+          <button type="submit" className="btn-primary" style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', cursor: 'pointer', background: '#ccff00', border: 'none', fontWeight: 'bold' }}>
+            {isLogin ? 'Se connecter' : "S'inscrire"}
           </button>
         </form>
 
@@ -131,7 +126,7 @@ export default function AuthModal({ isOpen, onClose }) {
         <p style={{ textAlign: 'center', marginTop: '20px', color: '#ccc', fontSize: '0.9rem' }}>
           {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
           <span 
-            onClick={() => { setIsLogin(!isLogin); setError(''); }} 
+            onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); }} 
             style={{ color: '#ccff00', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}
           >
             {isLogin ? "Créer un compte" : "Se connecter"}
@@ -143,33 +138,9 @@ export default function AuthModal({ isOpen, onClose }) {
   );
 }
 
-// --- STYLES INLINE (Pour aller vite, tu pourras mettre en CSS) ---
-const overlayStyle = {
-  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)',
-  zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center',
-  padding: '20px'
-};
-
-const modalStyle = {
-  width: '100%', maxWidth: '400px', 
-  boxShadow: '0 0 50px rgba(204, 255, 0, 0.15)',
-  animation: 'fadeIn 0.3s'
-};
-
-const googleBtnStyle = {
-  background: 'white', color: '#333', border: 'none', padding: '12px',
-  borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
-};
-
-const appleBtnStyle = {
-  background: 'black', color: 'white', border: '1px solid #333', padding: '12px',
-  borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
-};
-
-const errorStyle = {
-  background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d', padding: '10px',
-  borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', textAlign: 'center'
-};
+// --- STYLES ---
+const overlayStyle = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' };
+const modalStyle = { width: '100%', maxWidth: '400px', background: '#1a1a1a', padding: '20px', borderRadius: '15px', boxShadow: '0 0 50px rgba(204, 255, 0, 0.15)', animation: 'fadeIn 0.3s' };
+const errorStyle = { background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', textAlign: 'center' };
+// Nouveau style pour le succès
+const successStyle = { background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', textAlign: 'center', border: '1px solid #4ade80' };

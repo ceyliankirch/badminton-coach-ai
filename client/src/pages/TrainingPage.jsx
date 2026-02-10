@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IconJournal, IconTrash } from '../components/Icons'; // <-- Import IconTrash
+import { IconJournal, IconTrash } from '../components/Icons';
 
 export default function TrainingPage() {
   const [trainings, setTrainings] = useState([]);
@@ -11,24 +11,46 @@ export default function TrainingPage() {
   }, []);
 
   const fetchTrainings = () => {
-    fetch('http://localhost:5000/api/trainings')
+    const token = localStorage.getItem('token');
+    if (!token) return; // Si pas connecté, on arrête là pour éviter les erreurs
+
+    fetch('http://localhost:5000/api/trainings', {
+      headers: { 'x-auth-token': token } // <--- LE PASS SANITAIRE
+    })
       .then(res => res.json())
-      .then(data => setTrainings(data))
+      .then(data => {
+        // Sécurité anti-crash : on ne met à jour que si c'est bien une liste
+        if (Array.isArray(data)) {
+            setTrainings(data);
+        } else {
+            console.error("Erreur format données:", data);
+        }
+      })
       .catch(err => console.error("Erreur:", err));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const token = localStorage.getItem('token');
+    if (!token) return alert("Tu dois être connecté !");
+
     try {
       const response = await fetch('http://localhost:5000/api/trainings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-auth-token': token // <--- AJOUT DU TOKEN
+        },
         body: JSON.stringify(formData)
       });
+      
       if (response.ok) {
-        fetchTrainings(); // On recharge la liste
+        fetchTrainings(); 
         setFormData({ theme: '', notes: '', rating: 5 });
+      } else {
+          alert("Erreur lors de l'enregistrement");
       }
     } catch (err) {
       console.error(err);
@@ -37,27 +59,33 @@ export default function TrainingPage() {
     }
   };
 
-  // --- NOUVELLE FONCTION : SUPPRIMER ---
-  const deleteTraining = async (id) => {
-    // Petite confirmation avant de supprimer
+const deleteTraining = async (id) => {
     if (!window.confirm("Veux-tu vraiment supprimer cette séance ?")) return;
 
+    const token = localStorage.getItem('token');
+
     try {
-      await fetch(`http://localhost:5000/api/trainings/${id}`, {
-        method: 'DELETE'
+      const response = await fetch(`http://localhost:5000/api/trainings/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-auth-token': token }
       });
-      // On met à jour la liste localement en filtrant l'élément supprimé
-      setTrainings(trainings.filter(t => t._id !== id));
+
+      // ON VÉRIFIE QUE LE SERVEUR A DIT "OK" AVANT DE SUPPRIMER VISUELLEMENT
+      if (response.ok) {
+        setTrainings(trainings.filter(t => t._id !== id));
+      } else {
+        alert("Impossible de supprimer (Erreur serveur)");
+      }
     } catch (err) {
-      alert("Erreur lors de la suppression");
+      alert("Erreur de connexion");
     }
   };
 
+  // --- RENDU (Inchangé) ---
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
       
       <header style={{ marginBottom: '30px', textAlign: 'center' }}>
-        {/* ... header inchangé ... */}
         <div style={{ width: '50px', height: '50px', background: 'rgba(204, 255, 0, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto', color: '#ccff00' }}>
           <IconJournal />
         </div>
@@ -66,10 +94,11 @@ export default function TrainingPage() {
       </header>
       
       <div className="card" style={{ marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px auto' }}>
-        {/* ... formulaire inchangé ... */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div>
-            <label>Thème de la séance</label>
+            <label style={{ display: 'block', marginBottom: '10px', color: '#ccc', fontWeight: 'bold' }}>
+              Thème de la séance
+            </label>
             <input 
               type="text" placeholder="Ex: Défense smash, Filet..." 
               value={formData.theme} onChange={e => setFormData({...formData, theme: e.target.value})}
@@ -77,7 +106,9 @@ export default function TrainingPage() {
             />
           </div>
           <div>
-            <label>Tes sensations / Notes</label>
+            <label style={{ display: 'block', marginBottom: '10px', color: '#ccc', fontWeight: 'bold' }}>
+              Tes sensations / Notes
+            </label>
             <textarea 
               placeholder="Comment t'es-tu senti ?..." 
               value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}
@@ -106,7 +137,6 @@ export default function TrainingPage() {
           {trainings.map(training => (
             <div key={training._id} className="card" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               
-              {/* EN-TÊTE DE LA CARTE AVEC LE BOUTON SUPPRIMER */}
               <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <h4 style={{ margin: 0, color: 'white', fontSize: '1.1rem' }}>{training.theme}</h4>
@@ -114,7 +144,6 @@ export default function TrainingPage() {
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {/* Badge Note */}
                   <div style={{ 
                     background: training.rating >= 7 ? 'rgba(204, 255, 0, 0.15)' : 'rgba(255, 255, 255, 0.1)', 
                     color: training.rating >= 7 ? '#ccff00' : '#ccc',
@@ -123,7 +152,6 @@ export default function TrainingPage() {
                     {training.rating}/10
                   </div>
                   
-                  {/* --- BOUTON POUBELLE --- */}
                   <div className="delete-btn" onClick={() => deleteTraining(training._id)} title="Supprimer la séance">
                     <IconTrash />
                   </div>

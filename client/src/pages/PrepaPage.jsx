@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { IconDumbbell, IconTrash } from '../components/Icons'; // <-- Import IconTrash
+import { IconDumbbell, IconTrash } from '../components/Icons'; 
 
 export default function PrepaPage() {
-  // ... états inchangés ...
   const [focus, setFocus] = useState('Explosivité');
   const [program, setProgram] = useState(null);
   const [history, setHistory] = useState([]);
@@ -13,20 +12,38 @@ export default function PrepaPage() {
   }, []);
 
   const fetchHistory = () => {
-    fetch('http://localhost:5000/api/prepa/history')
+    // 1. On récupère le token
+    const token = localStorage.getItem('token');
+    if (!token) return; // Si pas connecté, on ne charge pas l'historique
+
+    // 2. On l'ajoute dans les headers
+    fetch('http://localhost:5000/api/prepa/history', {
+      headers: { 'x-auth-token': token }
+    })
       .then(res => res.json())
       .then(data => setHistory(data))
       .catch(err => console.error(err));
   };
 
-  // ... generateProgram et saveProgram inchangés ...
   const generateProgram = async () => {
     setLoading(true);
     setProgram(null);
+    
+    // On récupère le token (au cas où tu aurais protégé la génération aussi)
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("Tu dois être connecté pour générer un programme !");
+        setLoading(false);
+        return;
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/prepa', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-auth-token': token // AJOUT DU TOKEN ICI
+        },
         body: JSON.stringify({ focus })
       });
       const data = await response.json();
@@ -40,35 +57,44 @@ export default function PrepaPage() {
 
   const saveProgram = async () => {
     if (!program) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return alert("Connecte-toi pour sauvegarder !");
+
     try {
       const response = await fetch('http://localhost:5000/api/prepa/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-auth-token': token // AJOUT DU TOKEN ICI
+        },
         body: JSON.stringify({ focus, program })
       });
       if (response.ok) {
         alert("Sauvegardé !");
-        fetchHistory();
+        fetchHistory(); // On recharge l'historique après sauvegarde
       }
     } catch (err) {
       alert("Erreur sauvegarde");
     }
   };
 
-  // --- NOUVELLE FONCTION : SUPPRIMER PROGRAMME ---
   const deleteProgram = async (id, e) => {
-    // IMPORTANT : Empêche d'ouvrir le programme quand on clique sur la poubelle
     e.stopPropagation(); 
-
     if (!window.confirm("Supprimer ce programme de l'historique ?")) return;
+
+    const token = localStorage.getItem('token');
 
     try {
       await fetch(`http://localhost:5000/api/prepa/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 
+            'x-auth-token': token // AJOUT DU TOKEN ICI
+        }
       });
-      // Mise à jour locale
+      
       setHistory(history.filter(item => item._id !== id));
-      // Si le programme supprimé est celui affiché, on le ferme
+      
       if (program && program._id === id) {
         setProgram(null);
       }
@@ -77,10 +103,9 @@ export default function PrepaPage() {
     }
   };
 
-
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
-      {/* ... header et zone de commande inchangés ... */}
+      
       <header style={{ marginBottom: '30px', textAlign: 'center' }}>
         <div style={{ width: '50px', height: '50px', background: 'rgba(204, 255, 0, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto', color: '#ccff00' }}>
           <IconDumbbell />
@@ -105,7 +130,6 @@ export default function PrepaPage() {
         </button>
       </div>
 
-      {/* ... Affichage programme inchangé ... */}
       {program && (
         <div style={{ animation: 'fadeIn 0.5s', marginBottom: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -117,6 +141,7 @@ export default function PrepaPage() {
             <Section title="💣 Corps de séance" exercises={program.main || (program.content && program.content.main)} highlight />
             <Section title="🧊 Retour au calme" exercises={program.cooldown || (program.content && program.content.cooldown)} />
           </div>
+          {/* On n'affiche le bouton sauvegarder que si le programme n'a pas d'ID (donc s'il vient d'être généré et pas chargé depuis l'historique) */}
           {!program._id && (
             <button className="btn-primary" onClick={saveProgram} style={{ background: 'white', color: 'black' }}>
               💾 Sauvegarder dans l'historique
@@ -125,8 +150,7 @@ export default function PrepaPage() {
         </div>
       )}
 
-      {/* --- LISTE HISTORIQUE AVEC POUBELLE --- */}
-      <div style={{ marginTop: '40px' }}>
+      <div style={{ marginTop: '40px', paddingBottom: '100px' }}>
         <h3 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>📚 Historique</h3>
         {history.length === 0 && <p style={{ color: '#666' }}>Aucun programme sauvegardé.</p>}
 
@@ -139,9 +163,9 @@ export default function PrepaPage() {
                 setProgram(item);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              style={{ /* styles de la carte... */
-                padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', // space-between pour pousser le bas
-                cursor: 'pointer', transition: 'transform 0.2s, border-color 0.2s', minHeight: '120px' // Hauteur min pour que ça respire
+              style={{ 
+                padding: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', 
+                cursor: 'pointer', transition: 'transform 0.2s, border-color 0.2s', minHeight: '120px' 
               }}
               onMouseEnter={(e) => e.currentTarget.style.borderColor = '#ccff00'}
               onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
@@ -152,14 +176,11 @@ export default function PrepaPage() {
                 <span style={{ color: '#888', fontSize: '0.8rem' }}>{new Date(item.date).toLocaleDateString()}</span>
               </div>
               
-              {/* LE BAS DE LA CARTE : "Voir" + POUBELLE */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
                  <span style={{ color: '#ccff00', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                   Voir ➔
                 </span>
 
-                {/* --- BOUTON POUBELLE --- */}
-                {/* On passe 'e' (l'événement) à la fonction pour faire le stopPropagation */}
                 <div className="delete-btn" onClick={(e) => deleteProgram(item._id, e)} title="Supprimer ce programme">
                   <IconTrash />
                 </div>
@@ -173,7 +194,7 @@ export default function PrepaPage() {
   );
 }
 
-// Composant Section (Inchangé)
+// Composant Section inchangé
 function Section({ title, exercises, highlight }) {
   if (!exercises) return null;
   return (
