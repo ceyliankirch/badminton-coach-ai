@@ -1,0 +1,480 @@
+/* 1. IMPORTER MONTSERRAT (Tout en haut du fichier) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* ... tes variables (ne change rien ici) ... */
+  --bg-dark: #050b0a;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --nav-bg: rgba(5, 11, 10, 0.85);
+  
+  --primary: #ccff00;
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  
+  --blur: 20px;
+}
+
+body {
+  margin: 0;
+  /* 2. APPLIQUER LA POLICE ICI */
+  font-family: 'Montserrat', sans-serif; 
+  
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  padding-top: 80px; 
+  padding-bottom: 100px; 
+}
+/* --- BARRE DU HAUT (Profil) --- */
+/* --- TOP BAR (Layout corrigé) --- */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px; /* On fixe une hauteur */
+  padding: 0 20px;
+  background: linear-gradient(to bottom, var(--bg-dark), transparent);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pousse le Logo à gauche et le Profil à droite */
+  box-sizing: border-box; /* Important pour les marges */
+}
+
+/* Le Logo (Carré Vert) */
+.logo-box {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: black;
+  font-size: 1.2rem;
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+  flex-shrink: 0; /* Empêche le logo de s'écraser */
+  cursor: pointer;
+}
+
+/* Le Profil (Chip à droite) */
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  padding: 6px 6px 6px 15px; /* Padding ajusté */
+  border-radius: 30px;
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Empêche de s'étirer ou s'écraser */
+  width: auto;    /* Ne prend que la place nécessaire */
+}
+
+.profile-chip:hover {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  border: 1px solid var(--card-border);
+}
+
+/* --- BARRE DU BAS (Menu) --- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  padding-bottom: 10px; /* Pour les iPhone récents (Safe area) */
+  box-sizing: border-box;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  gap: 6px;
+  width: 60px;
+  transition: color 0.3s;
+}
+
+/* Style des icones SVG */
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  stroke-width: 1.5; /* TRAIT FIN (Fine Stroke) */
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: all 0.3s;
+}
+
+/* État Actif */
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item.active .nav-icon {
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 5px rgba(204, 255, 0, 0.4)); /* Petite lueur néon */
+}
+
+/* --- CLASSES UTILITAIRES --- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* --- STAT CARDS (Style Green Flow) --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 colonnes */
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: #0f1a18; /* Un peu plus clair que le fond */
+  border-radius: 24px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 140px; /* Hauteur fixe pour le look carré/widget */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 2;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.icon-circle-white {
+  background: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.icon-circle-white svg {
+  width: 18px;
+  height: 18px;
+  stroke: black; /* L'icone est noire sur fond blanc */
+  stroke-width: 2;
+}
+
+/* La petite courbe (Graph) */
+.stat-graph {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+/* --- FORMULAIRES & INPUTS --- */
+
+/* 2. Champs Texte, Select et Zone de texte */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+select,
+textarea {
+  box-sizing: border-box; /* <--- C'EST LA LIGNE MAGIQUE QUI EMPÊCHE DE DÉBORDER */
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--card-border);
+  color: white;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 1rem;
+  width: 100%; /* Maintenant 100% inclut le padding */
+  font-family: inherit;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- AMÉLIORATION LISTE DÉROULANTE --- */
+select {
+  appearance: none;        /* On supprime le style par défaut du navigateur */
+  -webkit-appearance: none; /* Pour Safari/Chrome */
+  
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--card-border);
+  color: white;
+  border-radius: 16px;
+  
+  /* C'est ici qu'on gère l'espacement interne */
+  padding: 16px 50px 16px 20px; /* 50px à droite pour laisser la place à la flèche */
+  
+  font-size: 1rem;
+  width: 100%;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  /* On ajoute notre propre flèche verte en image de fond */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ccff00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  
+  /* POSITION DE LA FLÈCHE : 20px du bord droit */
+  background-position: right 20px center;
+  background-size: 20px; /* Taille de la flèche */
+}
+
+select:focus {
+  border-color: var(--primary);
+  background-color: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 4px rgba(204, 255, 0, 0.1);
+}
+
+/* =========================================
+   VERSION PC & TABLETTE (Responsive)
+   ========================================= */
+
+/* =========================================
+   VERSION PC & TABLETTE (Menu Flottant "Pilule")
+   ========================================= */
+
+@media (min-width: 768px) {
+
+  /* 1. LA NAVIGATION : Pilule Flottante Verticale */
+  .bottom-nav {
+    /* Positionnement Flottant */
+    position: fixed;
+    left: 20px;            /* Décollé du bord gauche */
+    top: 50%;              /* Centré verticalement */
+    transform: translateY(-50%); /* Ajustement centrage */
+    bottom: auto;
+    
+    /* Taille & Forme */
+    width: 70px;           /* Etroit */
+    height: auto;          /* S'adapte au contenu */
+    padding: 30px 0;       /* Espace en haut/bas interne */
+    border-radius: 50px;   /* Forme de PILULE */
+    
+    /* Style Visuel (Glassmorphism Sombre) */
+    background: rgba(10, 20, 18, 0.6); /* Fond semi-transparent */
+    backdrop-filter: blur(20px);       /* Flou derrière */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Bordure subtile */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);  /* Ombre portée */
+    
+    /* Agencement interne */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;             /* Espace entre les icônes */
+  }
+
+  /* 2. LES ITEMS (Boutons ronds) */
+  .nav-item {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;    /* Cercle parfait */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;            /* Reset du padding */
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Effet rebond */
+    position: relative;
+  }
+
+  /* ON CACHE LE TEXTE */
+  .nav-item span {
+    display: none; 
+  }
+
+  /* Les icônes */
+  .nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #888; /* Gris par défaut */
+    transition: stroke 0.3s;
+  }
+
+  /* Les icônes par défaut (Non actives) */
+  .nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke: var(--primary); /* <--- C'est ici ! (#ccff00) */
+    transition: all 0.3s;
+    opacity: 0.7; /* Légère transparence pour ne pas être trop agressif */
+  }
+
+  /* 2. Au survol : Vert éclatant + Lueur */
+  .nav-item:hover .nav-icon {
+    opacity: 1;
+    stroke: var(--primary);
+    filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.6)); /* Effet néon */
+  }
+
+  /* 3. QUAND C'EST ACTIF (Fond Vert) : Icône NOIRE */
+  /* C'est important sinon vert sur vert = invisible */
+  .nav-item.active .nav-icon {
+    stroke: black; 
+    opacity: 1;
+    filter: none; 
+  }
+
+  /* 3. ÉTAT ACTIF (Sélectionné = Vert Néon) */
+  .nav-item.active {
+    background: var(--primary); /* Le fond devient VERT */
+    box-shadow: 0 0 20px rgba(204, 255, 0, 0.6); /* Lueur Néon intense */
+    transform: scale(1.15); /* Un peu plus gros */
+  }
+
+  .nav-item.active .nav-icon {
+    stroke: black; /* L'icône devient NOIRE pour le contraste */
+    stroke-width: 2; /* Un peu plus gras */
+    filter: none;
+  }
+
+  /* --- BOUTON SUPPRIMER (Poubelle) --- */
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  /* Fond rouge foncé transparent */
+  background-color: rgba(255, 51, 51, 0.15); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  /* Petit espace si placé à côté d'autres éléments */
+  margin-left: 10px;
+  flex-shrink: 0; /* Empêche d'être écrasé */
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 51, 51, 0.3);
+  border-color: #ff3333; /* Bordure rouge vif au survol */
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); /* Lueur rouge */
+  transform: scale(1.1);
+}
+
+/* --- BOUTON SUPPRIMER (Poubelle) --- */
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  /* Fond rouge foncé transparent */
+  background-color: rgba(255, 51, 51, 0.15); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  /* Petit espace si placé à côté d'autres éléments */
+  margin-left: 10px;
+  flex-shrink: 0; /* Empêche d'être écrasé */
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 51, 51, 0.3);
+  border-color: #ff3333; /* Bordure rouge vif au survol */
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.5); /* Lueur rouge */
+  transform: scale(1.1);
+}
+
+/* On ajuste la taille de l'icône à l'intérieur */
+.delete-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+  /* 4. AJUSTEMENT DU RESTE DE LA PAGE */
+  body {
+    padding-left: 120px; /* On laisse de la place pour la pilule flottante */
+    padding-bottom: 40px;
+  }
+
+  .top-bar {
+    left: 120px; /* La barre du haut commence après le menu */
+    width: calc(100% - 120px);
+    padding: 0 40px;
+    background: transparent; /* Plus joli sans fond marqué sur PC */
+  }
+
+  /* Grilles responsive (inchangé) */
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  div[style*="maxWidth: 600px"], 
+  div[style*="maxWidth: 800px"],
+  div[style*="maxWidth: 1200px"] {
+    max-width: 1400px !important;
+  }
+}
