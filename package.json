@@ -5,5 +5,11 @@
     "groq-sdk": "^0.37.0",
     "mongoose": "^9.1.6",
     "react-router-dom": "^7.13.0"
+  },
+  "name": "votre-projet",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js"
   }
 }
+
