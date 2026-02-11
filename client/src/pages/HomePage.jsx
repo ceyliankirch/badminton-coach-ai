@@ -64,6 +64,7 @@ export default function HomePage() {
     fetchData();
   }, []);
 
+
   // --- REFRESH IA (APPEL API) ---
   const refreshAi = async (e) => {
     e.stopPropagation(); // Empêche d'ouvrir le modal quand on clique juste sur le refresh
@@ -146,7 +147,7 @@ export default function HomePage() {
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
         .ai-card-full:hover {
-          border-color: #ccff00 !important;
+          border-color: var(--primary) !important;
           transform: translateY(-2px);
         }
       `}</style>
@@ -157,11 +158,11 @@ export default function HomePage() {
         height: '40vh', marginBottom: '20px', textAlign: 'center',
       }}>
         <div style={{ 
-          width: '120px', height: '120px', 
+          width: '180px', height: '180px', 
           borderRadius: '50%', 
-          border: '4px solid #ccff00', 
+          border: '4px solid var(--primary)', 
           padding: '5px', marginBottom: '20px',
-          boxShadow: '0 0 30px rgba(204, 255, 0, 0.3)',
+          boxShadow: '0 0 30px rgba(0, 255, 140, 0.3)',
           background: '#0a0a0a', // Fond noir pour éviter la transparence
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -181,7 +182,7 @@ export default function HomePage() {
           )}
         </div>
         <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
-          Hello <span style={{ color: '#ccff00' }}>{userName}</span> !
+          Hello <span style={{ color: 'var(--primary)' }}>{userName}</span> !
         </h1>
         <p style={{ margin: '10px 0 0 0', color: '#888', fontSize: '1.1rem' }}>
           Prêt à tout casser aujourd'hui ? 🔥
@@ -198,8 +199,8 @@ export default function HomePage() {
           onClick={openAiModal} 
           style={{ 
             ...gridCardStyle, 
-            background: 'linear-gradient(135deg, rgba(204, 255, 0, 0.08), rgba(26, 26, 26, 1))',
-            border: '1px solid rgba(204, 255, 0, 0.2)', 
+            background: 'linear-gradient(135deg, rgba(0, 255, 157, 0.08), rgba(26, 26, 26, 1))',
+            border: '1px solid rgba(0, 255, 145, 0.2)', 
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -207,8 +208,8 @@ export default function HomePage() {
             {/* EN-TÊTE DE LA CARTE */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                   <FaRobot color="#ccff00" size={18} />
-                   <span style={{ color: '#ccff00', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                   <FaRobot color="var(--primary)" size={18} />
+                   <span style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>
                      COACH IA
                    </span>
                 </div>
@@ -222,11 +223,11 @@ export default function HomePage() {
                         onClick={refreshAi}
                         style={{
                             width: '24px', height: '24px',
-                            background: '#ccff00',
+                            background: 'var(--primary)',
                             borderRadius: '50%',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             cursor: 'pointer',
-                            boxShadow: '0 0 10px rgba(204, 255, 0, 0.2)',
+                            boxShadow: '0 0 10px rgba(0, 255, 110, 0.2)',
                         }}
                     >
                         <FaSyncAlt 
@@ -262,10 +263,10 @@ export default function HomePage() {
 
         {/* 2. JOURNAL */}
         <Link to="/trainings" style={gridCardStyle} 
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#ccff00'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(26, 26, 26, 0.2)'}>
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--journal-color)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--journal-bg)'}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(26, 26, 26, 0.2)', padding: '8px', borderRadius: '8px', color: '#ccff00' }}>
+            <div style={{ background: 'var(--journal-bg)', padding: '8px', borderRadius: '8px', color: '#ccff00' }}>
                <IconJournal />
             </div>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>{stats.trainingCount}</span>
@@ -277,10 +278,10 @@ export default function HomePage() {
 
         {/* 3. PRÉPA */}
         <Link to="/prepa" style={gridCardStyle}
-              onMouseEnter={e => e.currentTarget.style.borderColor = '#00d4ff'}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--prepa-color)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(0, 212, 255, 0.1)', padding: '8px', borderRadius: '8px', color: '#00d4ff' }}>
+            <div style={{ background: 'var(--prepa-bg)', padding: '8px', borderRadius: '8px', color: '#00d4ff' }}>
                <IconDumbbell />
             </div>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>{stats.prepaCount}</span>
@@ -310,7 +311,7 @@ export default function HomePage() {
       {/* --- LISTE BAS DE PAGE --- */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#fff' }}>Derniers entraînements</h3>
-        <Link to="/trainings" style={{ color: '#ccff00', fontSize: '0.85rem', textDecoration: 'none' }}>Voir tout</Link>
+        <Link to="/trainings" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>Voir tout</Link>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>

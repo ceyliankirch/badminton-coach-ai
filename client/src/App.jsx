@@ -1,28 +1,26 @@
-import React, { useState, useEffect } from 'react'; // Ajout de React pour cloneElement
+import React, { useState, useEffect } from 'react'; 
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
-// --- IMPORTS DES PAGES (Inchangés) ---
+// --- IMPORTS DES PAGES ---
 import HomePage from './pages/HomePage';
 import TrainingPage from './pages/TrainingPage';
 import PrepaPage from './pages/PrepaPage';
 import CompetitionsPage from './pages/CompetitionsPage'; 
 import ProfilePage from './pages/ProfilePage';
 
-// --- IMPORTS DES COMPOSANTS (Inchangés) ---
+// --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
 import CustomModal from './components/CustomModal';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
-import { LuTrophy } from 'react-icons/lu'; // Lucide Iconsimport { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
-import { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { LuTrophy } from 'react-icons/lu'; 
+import { FaUser, FaSignOutAlt, FaChevronDown } from 'react-icons/fa'; // Ajout de FaChevronDown
 
-// --- 1. WRAPPER MIS À JOUR ---
-// Il accepte maintenant une prop "color" passée par NavItem
-const IconTrophy = ({ color = "#8a9a2a" }) => (
+// --- 1. WRAPPER TROPHÉE ---
+const IconTrophy = ({ color = "var(--text-muted)" }) => (
   <LuTrophy 
     size={22} 
     className="nav-icon trophy-icon"
     style={{ 
-      stroke: color, 
       fill: 'none', 
       transition: 'all 0.3s ease',
       display: 'block' 
@@ -30,21 +28,18 @@ const IconTrophy = ({ color = "#8a9a2a" }) => (
   />
 );
 
-// --- 2. NAVITEM MIS À JOUR ---
-// Utilise React.cloneElement pour forcer la couleur de l'icône si actif
+// --- 2. NAVITEM ---
 function NavItem({ to, icon, label }) {
   const location = useLocation();
   const isActive = location.pathname === to;
 
-  // On injecte la couleur NOIRE si actif, sinon la couleur par défaut (kaki)
   const iconWithProps = React.cloneElement(icon, { 
-    color: isActive ? "#000000" : "#8a9a2a" 
+    color: isActive ? "#000000" : "#ffffff" 
   });
 
   return (
     <Link to={to} className={`nav-item ${isActive ? 'active' : ''}`}>
       {iconWithProps}
-      <span>{label}</span>
     </Link>
   );
 }
@@ -102,30 +97,37 @@ function App() {
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
 
       <div className="top-bar">
-        <div className="logo-box">B</div>
+        <Link to="/" className="logo-box">
+          <img src="/assets/bdmcoach_logo.svg" alt="Logo" className="logo" />
+        </Link>
+        
         <div style={{ position: 'relative' }}>
             <div 
-                className="profile-chip" 
                 onClick={() => user ? setIsDropdownOpen(!isDropdownOpen) : setIsModalOpen(true)} 
-                style={{ cursor: 'pointer' }}
+                style={{ 
+                  cursor: 'pointer',
+                  marginTop: '20px', 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  padding: '5px 10px' 
+                }}
             >
                {user ? (
-                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#ccff00', marginRight: '10px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#ffffff' }}>
                         Hello {user.name}
                     </span>
-                    <div className="avatar-circle" style={{ overflow: 'hidden'}}>
-                      {user.avatar ? (
-                          <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a', color: '#444' }}>
-                            <FaUserCircle size={20} />
-                          </div>
-                      )}
-                    </div>
+                    <FaChevronDown 
+                      size={12} 
+                      style={{ 
+                        color: '#ffffff', 
+                        transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0)',
+                        transition: 'transform 0.3s ease'
+                      }} 
+                    />
                  </div>
                ) : (
-                 <span style={{ fontSize: '0.9rem', fontWeight: 'bold', padding: '0 10px', color: 'white' }}>
+                 <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'white' }}>
                    Connexion
                  </span>
                )}
@@ -155,7 +157,6 @@ function App() {
       </div>
 
       <nav className="bottom-nav">
-        {/* On passe les composants d'icônes normalement, NavItem s'occupe de la couleur */}
         <NavItem to="/" icon={<IconHome />} label="Accueil" />
         <NavItem to="/prepa" icon={<IconDumbbell />} label="Prépa" />
         <NavItem to="/trainings" icon={<IconJournal />} label="Journal" />

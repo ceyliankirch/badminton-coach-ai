@@ -78,7 +78,7 @@ export default function CustomModal({ isOpen, onClose, title, message, type = 'i
             }} 
             style={{ ...buttonBase, background: confirmColor, color: confirmTextColor }}
           >
-            {onConfirm ? (isDanger ? 'Supprimer' : 'Confirmer') : 'OK'}
+            {onConfirm ? (isDanger ? 'Se déconnecter' : 'Confirmer') : 'OK'}
           </button>
 
         </div>

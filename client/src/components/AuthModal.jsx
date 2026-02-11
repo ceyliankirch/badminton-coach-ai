@@ -21,20 +21,21 @@ export default function AuthModal({ isOpen, onClose }) {
     return regex.test(pass);
   };
 
-  const handleAuth = async (e) => {
+const handleAuth = async (e) => {
     e.preventDefault();
+    console.log("🚀 Tentative d'authentification lancée..."); // TEST 1
     setError('');
-    setSuccessMsg(''); // Reset du message de succès
+    setSuccessMsg('');
 
     try {
       if (isLogin) {
-        // --- CONNEXION ---
+        console.log("📡 Envoi de la requête login à l'API..."); // TEST 2
         const res = await axios.post('http://localhost:5000/api/auth/login', {
           email,
           password
         });
-
-        // Stockage
+        console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
+        
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
 

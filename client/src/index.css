@@ -1,42 +1,41 @@
-/* 1. IMPORT MONTSERRAT (Version Variable complète) */
+/* --- 1. FONTS & VARIABLES --- */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
   --bg-dark: #050b0a;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #1a2a25 0%, var(--bg-dark) 60%);
   --card-bg: rgba(255, 255, 255, 0.03);
   --card-border: rgba(255, 255, 255, 0.08);
-  --nav-bg: rgba(5, 11, 10, 0.85);
-  
-  --primary: #ccff00;
+  --nav-bg: rgba(10, 20, 18, 0.8);
+  --primary: #00ff8c;
+  --prepa-color: #ff0048;
+  --prepa-bg: rgb(22, 0, 6);
+  --journal-color: #00eeff;
+  --journal-bg: rgb(0, 34, 50);
+  --competition-color: #ffbb00;
+  --competition-bg: rgb(50, 30, 0);
+  --primary-glow: rgba(0, 255, 140, 0.4);
   --text-main: #ffffff;
   --text-muted: #888888;
-  
   --blur: 20px;
 }
 
-/* Reset global pour éviter les soucis de padding */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* --- 2. RESET & GLOBAL --- */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: 'Montserrat', sans-serif; /* Application de la font */
-  background-color: var(--bg-dark);
+  font-family: 'Montserrat', sans-serif;
+  background: var(--bg-dark) var(--bg-gradient);
   color: var(--text-main);
-  padding-top: 80px; 
-  padding-bottom: 100px; 
-  /* Petit dégradé de fond subtil */
-  background-image: radial-gradient(circle at 50% 0%, #1a2a25 0%, var(--bg-dark) 60%);
+  padding: 80px 0 100px 0; 
   min-height: 100vh;
 }
 
-/* --- BARRE DU HAUT (Top Bar) --- */
+/* --- 3. LAYOUT (Top Bar & Content) --- */
 .top-bar {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 70px;
   padding: 0 20px;
   background: linear-gradient(to bottom, var(--bg-dark), transparent);
@@ -46,508 +45,163 @@ body {
   justify-content: space-between;
 }
 
-/* Le Logo (Carré Vert) */
 .logo-box {
-  width: 40px;
-  height: 40px;
-  background-color: var(--primary);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  color: black;
-  font-size: 1.2rem;
-  box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
-  flex-shrink: 0;
-  cursor: pointer;
+  width: 60px; height: 60px;
+  background: var(--primary);
+  margin-top: 20px;
+  border-radius: 24px;
+  padding: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: black;
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
-/* --- LE PROFIL DANS LA BARRE DU HAUT --- */
-.profile-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Espace entre texte et avatar */
-  gap: 12px; /* Espace entre le texte et l'image */
-  
-  background: rgba(255, 255, 255, 0.05); /* Fond subtil */
-  backdrop-filter: blur(10px);
-  padding: 5px 5px 5px 15px; /* Padding ajusté (moins à droite pour l'image) */
-  
-  border-radius: 30px; /* Forme de pilule */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  
-  cursor: pointer;
-  transition: all 0.2s ease;
-  height: 44px; /* Hauteur fixe pour éviter les déformations */
-  box-sizing: border-box;
-}
-
-.profile-chip:hover {
-  border-color: #ccff00;
-  background: rgba(204, 255, 0, 0.1);
-}
-
-/* LE TEXTE "Hello..." */
-.profile-chip span {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: white;
-  white-space: nowrap; /* Empêche le texte de passer à la ligne */
-}
-
-/* L'IMAGE DE L'AVATAR (Le correctif est ici !) */
-.profile-chip img {
-  width: 32px !important;  /* On force la largeur */
-  height: 32px !important; /* On force la hauteur */
-  border-radius: 50%;      /* On force le rond parfait */
-  object-fit: cover;       /* L'image remplit le rond sans s'écraser */
-  background: #222;        /* Fond gris si l'image charge mal */
-  border: 1px solid rgba(255,255,255,0.2);
-  display: block;          /* Supprime les espaces fantômes */
-}
-/* --- BARRE DU BAS (Menu Mobile par défaut) --- */
+/* --- 4. NAVIGATION (Mobile & Desktop) --- */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
+  left: 50%; transform: translateX(-50%);
   background: var(--nav-bg);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
-  border-top: 1px solid var(--card-border);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  z-index: 100;
-  padding-bottom: 10px;
+  border: 1px solid var(--card-border);
+  display: flex; align-items: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  justify-content: center; /* Centre les éléments dans la barre */
+  gap: 15px;               /* Espace constant entre les boutons */
+  padding: 10px 20px;
+  height: 70px;
 }
 
+/* Base Nav Item (Common) */
 .nav-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  
+  /* Dimensions de base */
+  width: 50px; 
+  height: 50px;
+  border-radius: 50%;
+  
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0; /* Empêche l'icône de s'écraser */
   text-decoration: none;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  gap: 6px;
-  width: 60px;
-  transition: color 0.3s;
 }
 
-.nav-icon {
-  width: 24px;
-  height: 24px;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: all 0.3s;
+.nav-icon, .trophy-icon, .nav-item svg {
+  width: 24px; height: 24px;
+  stroke: var(--text-muted);
+  fill: none; stroke-width: 1.5;
+  transition: all 0.3s ease;
 }
 
-/* État Actif Mobile */
+.prepa-icon { stroke: var(--prepa-color); }
+.journal-icon { stroke: var(--journal-color); }
+
+/* Active State (The Neon Look) */
 .nav-item.active {
-  color: var(--primary);
+  border-radius: 25px;      /* Forme pilule */
+  background: var(--primary);
+  box-shadow: 0 0 20px var(--primary);
 }
 
-.nav-item.active .nav-icon {
-  stroke: var(--primary);
-  filter: drop-shadow(0 0 5px rgba(204, 255, 0, 0.4));
+.nav-item.active svg {
+  stroke: #000000 !important;
+  opacity: 1 !important;
 }
 
-/* --- CLASSES UTILITAIRES & COMPONENTS --- */
+/* Tablet & Mobile specifics */
+@media (max-width: 768px) {
+  .bottom-nav {
+    bottom: 20px;
+    padding: 15px;
+    border-radius: 9999px;
+    width: auto; gap: 15px;
+  }
+  .nav-item { width: 50px; height: 50px; }
+  .nav-item span { display: none; }
+  .nav-item.active { width: 85px;}
+}
+
+/* Desktop Sidebar specifics */
+@media (min-width: 769px) {
+  body { padding-left: 120px; padding-bottom: 40px; }
+  .bottom-nav {
+    left: 20px; top: 50%; transform: translateY(-50%);
+    bottom: auto; width: 75px; height: auto;
+    flex-direction: column; padding: 25px 0;
+    border-radius: 50px; gap: 25px;
+  }
+}
+
+/* --- 5. COMPOSANTS (Cards, Inputs, Buttons) --- */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 20px;
-  padding: 20px;
+  padding: 25px;
   backdrop-filter: blur(10px);
 }
 
-.btn-primary {
+.btn-primary, button[type="submit"] {
   background: var(--primary);
-  color: black;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
+  color: black; border: none;
+  padding: 15px 25px;
+  border-radius: 9999px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer; transition: 0.2s;
+}
+
+.btn-primary:active { transform: scale(0.96); }
+
+input, select, textarea {
   width: 100%;
-  transition: transform 0.2s;
-}
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-/* 1. INPUTS CLASSIQUES (Texte, Email, Password, TextArea...) */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-textarea,
-select {
-  /* Forme Pillule */
-  border-radius: 9999px !important;
-  /* Plus de padding sur les côtés pour la forme arrondie */
-  padding-left: 25px !important;
-  padding-right: 25px !important;
-  
-  /* Bordure de base fine */
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  outline: none !important; /* On enlève l'outline natif moche */
-  transition: all 0.3s ease;
+  border-radius: 9999px;
+  padding: 12px 25px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white; border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none; transition: 0.3s;
 }
 
-/* 2. ÉTAT FOCUS (Quand on clique dedans) */
-input:focus,
-textarea:focus,
-select:focus {
-  /* Bordure Néon ULTRA FINE (1px demandé) */
-  border-color: #ccff00 !important;
-  border-width: 1px !important;
-  /* On enlève les grosses ombres si il y en avait */
-  box-shadow: 0 0 5px rgba(204, 255, 0, 0.2) !important; /* Légère lueur subtile */
+input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+
+textarea { border-radius: 20px; min-height: 100px; resize: vertical; }
+
+/* Icon Inputs Profile */
+.profile-input-container { position: relative; }
+.profile-input-container input { padding-left: 55px !important; }
+.profile-input-container svg {
+  position: absolute; left: 20px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted); pointer-events: none;
 }
 
-/* --- CORRECTION POUR LES TEXTAREA (ex: Compétitions / Journal) --- */
-textarea {
-  border-radius: 12px !important; /* Remet un arrondi classique */
-  padding: 15px !important; /* Remet un padding normal, moins large sur les côtés */
-  min-height: 100px; /* Assure une bonne hauteur de base */
-  resize: vertical; /* Permet à l'utilisateur de l'agrandir de haut en bas si besoin */
-}
-
-/* --- TYPOGRAPHIE DES BOUTONS --- */
-button, 
-.btn-primary, 
-form button[type="submit"], 
-.custom-select /* Si tu veux aussi l'appliquer au faux menu déroulant */ {
-  font-family: 'Montserrat', sans-serif !important;
-  font-weight: 800 !important;
-  border-radius: 999px !important; /* Forme pillule */
-
-  /* Optionnel : tu peux rajouter text-transform: uppercase; si tu veux tout en majuscules */
-}
-
-/* --- STAT CARDS --- */
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: #0f1a18;
-  border-radius: 24px;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 140px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 800; /* Plus gras avec Montserrat */
-  color: white;
-  line-height: 1;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: #888;
-  font-weight: 600;
-}
-
-.stat-graph {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  width: 100%;
-  height: 50px;
-  z-index: 1;
-  opacity: 0.8;
-}
-
-/* --- BOUTON POUBELLE (Supprimer) --- */
-.delete-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: rgba(255, 51, 51, 0.15); 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-  margin-left: 10px;
-  flex-shrink: 0;
-}
-
-.delete-btn:hover {
-  background-color: rgba(255, 51, 51, 0.3);
-  border-color: #ff3333;
-  box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
-  transform: scale(1.1);
-}
-
-
-/* =========================================
-   VERSION PC & TABLETTE (Responsive)
-   ========================================= */
-
-@media (min-width: 768px) {
-
-  /* 1. LAYOUT GLOBAL */
-  body {
-    padding-left: 120px; /* Espace pour le menu latéral */
-    padding-bottom: 40px;
-  }
-
-  .top-bar {
-    left: 120px;
-    width: calc(100% - 120px);
-    padding: 0 40px;
-    background: transparent;
-  }
-
-  /* 2. MENU LATÉRAL FLOTTANT (Pilule) */
-  .bottom-nav {
-    position: fixed;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    bottom: auto;
-    width: 70px;
-    height: auto;
-    padding: 10px 0;
-    border-radius: 50px;
-    
-    background: rgba(10, 20, 18, 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    
-    flex-direction: column;
-    justify-content: center;
-    gap: 30px;
-  }
-
-  /* Items Menu Desktop */
-  .nav-item {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    padding: 0;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .nav-item span {
-    display: none; /* On cache le texte sur PC */
-  }
-
-  .nav-icon {
-    stroke: var(--primary); /* Couleur par défaut */
-    opacity: 0.6;
-    transition: all 0.3s;
-  }
-
-  /* Survol */
-  .nav-item:hover .nav-icon {
-    opacity: 1;
-    filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.6));
-  }
-
-  /* État ACTIF sur PC */
-  .nav-item.active {
-    background: var(--primary);
-    box-shadow: 0 0 20px rgba(204, 255, 0, 0.6);
-    transform: scale(1.15);
-  }
-
-  .nav-item.active .nav-icon {
-    stroke: black; /* Contraste Noir sur Vert */
-    stroke-width: 2;
-    opacity: 1;
-    filter: none;
-  }
-
-  /* Grilles élargies */
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-  
-  /* On force la largeur max sur PC pour ne pas que ce soit trop large */
-  div[style*="maxWidth: 600px"], 
-  div[style*="maxWidth: 800px"],
-  div[style*="maxWidth: 900px"],
-  div[style*="maxWidth: 1200px"] {
-    max-width: 1200px !important;
-  }
-}
-
-/* --- DROPDOWN MENU --- */
+/* --- 6. DROPDOWN & UTILS --- */
 .dropdown-menu {
-  position: absolute;
-  top: 60px; /* Juste en dessous de la top-bar */
-  right: 20px;
+  position: fixed; top: 75px; right: 20px;
   background: rgba(10, 20, 18, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 10px;
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  z-index: 2000;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  animation: fadeIn 0.2s ease-out;
+  border: 1px solid var(--card-border);
+  border-radius: 18px; padding: 8px;
+  width: 220px; z-index: 2000;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
 }
 
 .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  color: white;
-  text-decoration: none;
-  font-size: 0.9rem;
-  border-radius: 10px;
-  transition: background 0.2s;
-  cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; color: white; text-decoration: none;
+  border-radius: 12px; transition: 0.2s;
 }
 
-.dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ccff00;
-}
+.dropdown-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--primary); }
+.dropdown-item.danger { color: #ff4444; }
 
-.dropdown-item.danger {
-  color: #ff4444;
-}
-.dropdown-item.danger:hover {
-  background: rgba(255, 68, 68, 0.1);
-}
-
-/* --- MENU FLOTTANT (Base Desktop / Vertical) --- */
-.bottom-nav {
-  position: fixed;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column; /* Vertical par défaut */
-  align-items: center;
-  gap: 20px;
-  background: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 20px 10px; /* On garde ton padding réduit */
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 1000;
-}
-
-/* --- ADAPTATION MOBILE (Horizontal) --- */
-@media (max-width: 768px) {
-  .bottom-nav {
-    /* On réinitialise le positionnement vertical */
-    top: auto;
-    left: 50%;
-    bottom: 20px; /* Distance du bord bas */
-    transform: translateX(-50%);
-    
-    /* On passe en horizontal */
-    flex-direction: row; 
-    padding: 2px 10px; /* Padding réduit en hauteur, large sur les côtés */
-    min-width: 280px;
-    justify-content: center;
-    height: 60px;
-    gap: 20px; /* Plus d'espace entre les icônes en horizontal */
-  }
-
-  /* On s'assure que le contenu ne passe pas sous le menu */
-  .content-container {
-    padding-bottom: 100px; 
-  }
-}
-
-.nav-item.active {
-  background: #ccff00;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  color: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Si tu affiches le texte ("Accueil", etc.) uniquement sur Desktop */
-@media (max-width: 768px) {
-  .nav-item span {
-    display: none; /* Cache le texte sur mobile pour un look épuré */
-  }
-}
-
-/* --- ADAPTATION MOBILE (Horizontal - Fin & Harmonisé) --- */
-@media (max-width: 767px) {
-  .bottom-nav {
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    flex-direction: row;
-    padding: 8px 8px; /* Pillule fine */
-    gap: 20px;
-    border-radius: 9999px;
-    width: auto;
-    min-width: 220px;
-    max-width: 90%;
-  }
-
-.nav-item .nav-icon, 
-  .nav-item .trophy-icon,
-  .nav-item svg {
-    stroke: var(--text-muted) !important; /* Utilise ta variable grise */
-    color: var(--text-muted) !important;
-    opacity: 0.6;
-  }
-
-  /* État ACTIF : Force le NOIR et l'opacité pleine */
-  .nav-item.active .nav-icon, 
-  .nav-item.active .trophy-icon,
-  .nav-item.active svg {
-    stroke: #000000 !important;
-    color: #000000 !important;
-    opacity: 1 !important;
-  }
-}
-
-/* Dans ton fichier index.css */
-
-.profile-input-container input {
-  /* On augmente l'espace pour laisser la place à l'icône */
-  padding-left: 50px !important; 
-}
-
-/* On s'assure que l'icône ne bouge pas du centre vertical */
-.profile-input-container svg {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  pointer-events: none;
-  color: #888;
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+.stat-card {
+  background: #0f1a18; border-radius: 24px; padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05); height: 140px;
 }

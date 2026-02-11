@@ -246,7 +246,7 @@ const CompetitionsPage = () => {
             transition: 0.2s;
         }
         
-        .choice-btn.active-tournoi { border-color: #ccff00; color: #ccff00; background: rgba(204, 255, 0, 0.1); font-weight: bold; }
+        .choice-btn.active-tournoi { border-color: var(--competition-color); color: var(--competition-color); background: rgba(255, 187, 0, 0.1); font-weight: bold; }
         .choice-btn.active-win { border-color: #4ade80; color: #4ade80; background: rgba(74, 222, 128, 0.1); font-weight: bold; }
         .choice-btn.active-lose { border-color: #f87171; color: #f87171; background: rgba(248, 113, 113, 0.1); font-weight: bold; }
 
@@ -258,17 +258,17 @@ const CompetitionsPage = () => {
       <header style={{ textAlign: 'center', marginBottom: '30px' }}>
         <div style={{ 
           width: '70px', height: '70px', margin: '0 auto 15px auto', 
-          background: 'rgba(204, 255, 0, 0.1)', 
-          border: '2px solid #ccff00', 
+          background: 'var(--competition-bg)', 
+          border: '2px solid var(--competition-color)', 
           borderRadius: '50%', 
           display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          color: '#ccff00', 
-          boxShadow: '0 0 20px rgba(204, 255, 0, 0.2)' 
+          color: 'var(--competition-color)', 
+          boxShadow: '0 0 20px rgba(255, 187, 0, 0.2)' 
         }}>
           <FaTrophy size={30} />
         </div>
         <h1 style={{ fontSize: '2rem', margin: 0, color: 'white', fontWeight: 800}}>Compétitions</h1>
-        <p style={{ color: '#888', marginTop: '5px' }}>Suis tes matchs et analyse tes stats</p>
+        <p style={{ color: 'var(--competition-color)', marginTop: '2px', fontSize: '0.9rem' }}>Suis tes matchs et analyse tes stats</p>
       </header>
 
       {/* --- FORMULAIRE D'AJOUT --- */}
@@ -277,7 +277,7 @@ const CompetitionsPage = () => {
           <div className={`choice-btn ${formData.category === 'Tournoi' ? 'active-tournoi' : ''}`} onClick={() => setFormData({...formData, category:'Tournoi'})}>
             <FaMedal /> Tournoi
           </div>
-          <div className={`choice-btn ${formData.category === 'Interclub' ? 'active-tournoi' : ''}`} onClick={() => setFormData({...formData, category:'Interclub'})}>
+          <div className={`choice-btn ${formData.category === 'Interclub' ? 'active-tournoi' : ''}`} onClick={() => setFormData({...formData, category:'Interclub'})} >
             <FaUsers /> Interclub
           </div>
         </div>
@@ -328,7 +328,7 @@ const CompetitionsPage = () => {
           <input type="text" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Coller le lien YouTube ici" className="input-dark" style={{borderRadius: '9999px'}} />
         </div>
 
-        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: '100%', padding: '15px', background: '#ccff00', color: 'black', fontWeight: 'bold', border: 'none', borderRadius: '9999px', cursor: 'pointer' }}>
+        <button onClick={handleSubmit} disabled={loading} className="btn-primary" style={{ width: '100%', padding: '15px', background: 'var(--competition-color)', color: 'black', fontWeight: 'bold', border: 'none', borderRadius: '9999px', cursor: 'pointer' }}>
           {loading ? 'Analyse IA en cours...' : <span style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}}><FaSave /> ENREGISTRER LE MATCH</span>}
         </button>
       </div>

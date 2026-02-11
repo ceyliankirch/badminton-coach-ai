@@ -82,18 +82,18 @@ export default function TrainingPage() {
         {/* --- ICÔNE EN-TÊTE --- */}
         <div style={{ 
           width: '70px', height: '70px', margin: '0 auto 15px auto', 
-          background: 'rgba(204, 255, 0, 0.1)', 
-          border: '2px solid #ccff00', 
+          background: 'var(--journal-bg)', 
+          border: '2px solid #00eeff', 
           borderRadius: '50%', 
           display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          color: '#ccff00', 
-          boxShadow: '0 0 20px rgba(204, 255, 0, 0.2)' 
+          color: 'var(--journal-color)', 
+          boxShadow: '0 0 20px var(--journal-color)' 
         }}>
           <FaBook size={30} />
         </div>
         
-        <h1 style={{ fontSize: '2rem', margin: 0, color: 'white' }}>Mon Journal</h1>
-        <p style={{ color: '#888', marginTop: '5px' }}>Enregistre et analyse tes séances</p>
+        <h1 style={{ fontSize: '2rem', margin: 0, color: 'white', fontWeight: '800'}}>Mon Journal</h1>
+        <p style={{ color: 'var(--journal-color)', marginTop: '2px', fontSize: '0.9rem'}}>Enregistre et analyse tes séances</p>
       </header>
 
       {/* ========================================== */}
@@ -108,7 +108,7 @@ export default function TrainingPage() {
         }}
       >
         <h3 style={{ color: 'white', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-          <FaBook color="#ccff00" /> Nouvelle séance
+          <FaBook color="var(--journal-color)" /> Nouvelle séance
         </h3>
 
         <div style={{ marginBottom: '15px' }}>
@@ -147,18 +147,18 @@ export default function TrainingPage() {
         <div style={{ marginBottom: '25px' }}>
           <label style={{ color: 'white', fontSize: '0.9rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
             <span>Note de satisfaction</span>
-            <span style={{ color: '#ccff00' }}>{rating}/10</span>
+            <span style={{ color: 'var(--journal-color)' }}>{rating}/10</span>
           </label>
           <input 
             type="range" min="1" max="10" value={rating} onChange={(e) => setRating(e.target.value)}
-            style={{ width: '100%', cursor: 'pointer', accentColor: '#ccff00' }}
+            style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--journal-color)' }}
           />
         </div>
 
         <button 
           type="submit" disabled={loading}
           style={{ 
-            width: '100%', padding: '15px', background: '#ccff00', border: 'none', 
+            width: '100%', padding: '15px', background: 'var(--journal-color)', border: 'none', 
             color: 'black', fontFamily: 'Montserrat, sans-serif', fontWeight: 800, 
             fontSize: '1rem', borderRadius: '9999px', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', textTransform: 'uppercase'
@@ -185,7 +185,7 @@ export default function TrainingPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <h3 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.2rem' }}>{training.theme}</h3>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>{training.rating}/10</span>
+                <span style={{ color: 'var(--journal-color)', fontWeight: 'bold', fontSize: '1.1rem' }}>{training.rating}/10</span>
                 {/* Bouton de suppression discret */}
                 <button onClick={() => handleDelete(training._id)} style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '5px' }}>
                   <FaTrash />
@@ -202,8 +202,8 @@ export default function TrainingPage() {
             </p>
 
             {training.aiFeedback && (
-              <div style={{ background: 'rgba(204, 255, 0, 0.05)', padding: '15px', borderRadius: '10px', borderLeft: '4px solid var(--primary)' }}>
-                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '5px' }}>Coach IA :</strong>
+              <div style={{ background: 'var(--journal-bg)', padding: '15px', borderRadius: '10px', borderLeft: '4px solid var(--journal-color)' }}>
+                <strong style={{ color: 'var(--journal-color)', display: 'block', marginBottom: '5px' }}>Coach IA :</strong>
                 <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>{training.aiFeedback}</p>
               </div>
             )}
