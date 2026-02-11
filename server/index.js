@@ -10,6 +10,9 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.get('/', (req, res) => {
+  res.send('🚀 L\'API du Badminton Coach est en ligne et fonctionnelle !');
+});
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Serveur pro sur le port ${PORT}`));
 
 // ==========================================
