@@ -106,7 +106,7 @@ export default function HomePage() {
 
   // --- STYLE COMMUN ---
   const gridCardStyle = {
-    background: '#1a1a1a', 
+    background: 'rgba(26, 26, 26, 0.2)', 
     border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '16px',
     padding: '15px',
@@ -263,9 +263,9 @@ export default function HomePage() {
         {/* 2. JOURNAL */}
         <Link to="/trainings" style={gridCardStyle} 
               onMouseEnter={e => e.currentTarget.style.borderColor = '#ccff00'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}>
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(26, 26, 26, 0.2)'}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(204, 255, 0, 0.1)', padding: '8px', borderRadius: '8px', color: '#ccff00' }}>
+            <div style={{ background: 'rgba(26, 26, 26, 0.2)', padding: '8px', borderRadius: '8px', color: '#ccff00' }}>
                <IconJournal />
             </div>
             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>{stats.trainingCount}</span>
@@ -318,7 +318,7 @@ export default function HomePage() {
         {recentTrainings.length > 0 ? (
           recentTrainings.map(training => (
             <Link to="/trainings" key={training._id} style={{ textDecoration: 'none' }}>
-              <div className="card" style={{ background: '#1a1a1a', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', transition: 'transform 0.2s', borderRadius: '12px' }}>
+              <div className="card" style={{ background: 'rgba(26, 26, 26, 0.2)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', transition: 'transform 0.2s', borderRadius: '12px' }}>
                 <div style={{ 
                     background: training.rating >= 7 ? 'rgba(204, 255, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
                     padding: '10px', borderRadius: '10px', 

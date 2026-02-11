@@ -50,3 +50,28 @@ export const IconTrash = () => (
     <line x1="14" y1="11" x2="14" y2="17"></line>
   </svg>
 );
+
+export const IconTrophy = ({ size = 24, color = "currentColor", className = "" }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke={color} 
+    strokeWidth="2" /* Même épaisseur que tes autres icônes */
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    {/* Base du trophée */}
+    <path d="M8 21h8" />
+    <path d="M12 17v4" />
+    {/* Bol du trophée */}
+    <path d="M7 4h10v6a5 5 0 0 1-10 0V4" />
+    {/* Anse gauche */}
+    <path d="M7 8H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3" />
+    {/* Anse droite */}
+    <path d="M17 8h3a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-3" />
+  </svg>
+);

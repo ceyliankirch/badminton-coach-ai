@@ -1,35 +1,49 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // Ajout de React pour cloneElement
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
-// --- IMPORTS DES PAGES ---
+// --- IMPORTS DES PAGES (Inchangés) ---
 import HomePage from './pages/HomePage';
 import TrainingPage from './pages/TrainingPage';
 import PrepaPage from './pages/PrepaPage';
 import CompetitionsPage from './pages/CompetitionsPage'; 
-import ProfilePage from './pages/ProfilePage'; // <--- NOUVELLE PAGE
+import ProfilePage from './pages/ProfilePage';
 
-// --- IMPORTS DES COMPOSANTS ---
+// --- IMPORTS DES COMPOSANTS (Inchangés) ---
 import AuthModal from './components/AuthModal';
 import CustomModal from './components/CustomModal';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
-import { FaTrophy, FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa'; // <--- NOUVELLES ICÔNES
+import { LuTrophy } from 'react-icons/lu'; // Lucide Iconsimport { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 
-// --- PETIT COMPOSANT WRAPPER POUR L'ICÔNE ---
-const IconTrophy = () => (
-  <FaTrophy 
-    size={24} 
-    color="rgb(122, 170, 0)" 
-    className="trophy-icon"
+// --- 1. WRAPPER MIS À JOUR ---
+// Il accepte maintenant une prop "color" passée par NavItem
+const IconTrophy = ({ color = "#8a9a2a" }) => (
+  <LuTrophy 
+    size={22} 
+    className="nav-icon trophy-icon"
+    style={{ 
+      stroke: color, 
+      fill: 'none', 
+      transition: 'all 0.3s ease',
+      display: 'block' 
+    }} 
   />
 );
 
-// Composant pour les liens de navigation
+// --- 2. NAVITEM MIS À JOUR ---
+// Utilise React.cloneElement pour forcer la couleur de l'icône si actif
 function NavItem({ to, icon, label }) {
   const location = useLocation();
   const isActive = location.pathname === to;
+
+  // On injecte la couleur NOIRE si actif, sinon la couleur par défaut (kaki)
+  const iconWithProps = React.cloneElement(icon, { 
+    color: isActive ? "#000000" : "#8a9a2a" 
+  });
+
   return (
     <Link to={to} className={`nav-item ${isActive ? 'active' : ''}`}>
-      {icon}
+      {iconWithProps}
       <span>{label}</span>
     </Link>
   );
@@ -37,10 +51,9 @@ function NavItem({ to, icon, label }) {
 
 function App() {
   const [user, setUser] = useState(null); 
-  const [isModalOpen, setIsModalOpen] = useState(false); // AuthModal
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // <--- MENU DÉROULANT
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // --- ÉTAT POUR LE CUSTOM MODAL (Confirmation) ---
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -51,19 +64,16 @@ function App() {
 
   const closeConfirmModal = () => setConfirmModal({ ...confirmModal, isOpen: false });
 
-  // --- VÉRIFICATION DE LA CONNEXION ---
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
 
-  // --- DÉCONNEXION ---
   const handleLogout = () => {
-    setIsDropdownOpen(false); // Ferme le menu
+    setIsDropdownOpen(false);
     setConfirmModal({
       isOpen: true,
       title: 'Déconnexion',
@@ -80,7 +90,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      
       <CustomModal 
         isOpen={confirmModal.isOpen}
         onClose={closeConfirmModal}
@@ -92,13 +101,9 @@ function App() {
 
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
 
-      {/* --- BARRE DU HAUT --- */}
       <div className="top-bar">
         <div className="logo-box">B</div>
-        
-        {/* --- ZONE PROFIL (WRAPPER RELATIF POUR LE DROPDOWN) --- */}
         <div style={{ position: 'relative' }}>
-            
             <div 
                 className="profile-chip" 
                 onClick={() => user ? setIsDropdownOpen(!isDropdownOpen) : setIsModalOpen(true)} 
@@ -107,18 +112,12 @@ function App() {
                {user ? (
                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#ccff00', marginRight: '10px' }}>
-                       Hello {user.name}
+                        Hello {user.name}
                     </span>
-                    <div className="avatar-circle" style={{ overflow: 'hidden', background: '#000', border: '1px solid rgba(255,255,255,0.2)' }}>
-                      {/* LOGIQUE D'AFFICHAGE AVATAR */}
+                    <div className="avatar-circle" style={{ overflow: 'hidden'}}>
                       {user.avatar ? (
-                          <img 
-                            src={user.avatar} 
-                            alt="Avatar" 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
+                          <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                          // ILLUSTRATION SOMBRE "PAS DE PHOTO"
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a', color: '#444' }}>
                             <FaUserCircle size={20} />
                           </div>
@@ -132,7 +131,6 @@ function App() {
                )}
             </div>
 
-            {/* --- MENU DÉROULANT --- */}
             {isDropdownOpen && user && (
                 <div className="dropdown-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
                     <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
@@ -143,29 +141,26 @@ function App() {
                     </div>
                 </div>
             )}
-
         </div>
       </div>
 
-      {/* --- CONTENU --- */}
       <div className="content-container">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/prepa" element={<PrepaPage />} />
           <Route path="/trainings" element={<TrainingPage />} />
           <Route path="/competitions" element={<CompetitionsPage />} />
-          <Route path="/profile" element={<ProfilePage setUser={setUser} />} /> {/* ROUTE PROFIL AJOUTÉE */}
+          <Route path="/profile" element={<ProfilePage setUser={setUser} />} />
         </Routes>
       </div>
 
-      {/* --- MENU FLOTTANT --- */}
       <nav className="bottom-nav">
+        {/* On passe les composants d'icônes normalement, NavItem s'occupe de la couleur */}
         <NavItem to="/" icon={<IconHome />} label="Accueil" />
         <NavItem to="/prepa" icon={<IconDumbbell />} label="Prépa" />
         <NavItem to="/trainings" icon={<IconJournal />} label="Journal" />
         <NavItem to="/competitions" icon={<IconTrophy />} label="Compét" />
       </nav>
-
     </BrowserRouter>
   );
 }

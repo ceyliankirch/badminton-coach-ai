@@ -1,178 +1,222 @@
-import { useState, useEffect } from 'react';
-import { IconJournal, IconTrash } from '../components/Icons';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FaBook, FaCheck, FaTrash } from 'react-icons/fa';
 
 export default function TrainingPage() {
   const [trainings, setTrainings] = useState([]);
-  const [formData, setFormData] = useState({ theme: '', notes: '', rating: 5 });
+  const [theme, setTheme] = useState('');
+  const [notes, setNotes] = useState('');
+  const [rating, setRating] = useState(5);
   const [loading, setLoading] = useState(false);
 
+  // --- CHARGEMENT ---
   useEffect(() => {
     fetchTrainings();
   }, []);
 
-  const fetchTrainings = () => {
+  const fetchTrainings = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return; // Si pas connecté, on arrête là pour éviter les erreurs
-
-    fetch('http://localhost:5000/api/trainings', {
-      headers: { 'x-auth-token': token } // <--- LE PASS SANITAIRE
-    })
-      .then(res => res.json())
-      .then(data => {
-        // Sécurité anti-crash : on ne met à jour que si c'est bien une liste
-        if (Array.isArray(data)) {
-            setTrainings(data);
-        } else {
-            console.error("Erreur format données:", data);
-        }
-      })
-      .catch(err => console.error("Erreur:", err));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const token = localStorage.getItem('token');
-    if (!token) return alert("Tu dois être connecté !");
-
+    if (!token) return;
     try {
-      const response = await fetch('http://localhost:5000/api/trainings', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'x-auth-token': token // <--- AJOUT DU TOKEN
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      if (response.ok) {
-        fetchTrainings(); 
-        setFormData({ theme: '', notes: '', rating: 5 });
-      } else {
-          alert("Erreur lors de l'enregistrement");
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-const deleteTraining = async (id) => {
-    if (!window.confirm("Veux-tu vraiment supprimer cette séance ?")) return;
-
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/trainings/${id}`, {
-        method: 'DELETE',
+      const res = await axios.get('http://localhost:5000/api/trainings', {
         headers: { 'x-auth-token': token }
       });
-
-      // ON VÉRIFIE QUE LE SERVEUR A DIT "OK" AVANT DE SUPPRIMER VISUELLEMENT
-      if (response.ok) {
-        setTrainings(trainings.filter(t => t._id !== id));
-      } else {
-        alert("Impossible de supprimer (Erreur serveur)");
-      }
+      setTrainings(res.data);
     } catch (err) {
-      alert("Erreur de connexion");
+      console.error("Erreur chargement entraînements:", err);
     }
   };
 
-  // --- RENDU (Inchangé) ---
+  // --- SAUVEGARDE ---
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!theme.trim()) return;
+    
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    
+    try {
+      await axios.post('http://localhost:5000/api/trainings', 
+        { theme, notes, rating },
+        { headers: { 'x-auth-token': token } }
+      );
+      
+      setTheme('');
+      setNotes('');
+      setRating(5);
+      fetchTrainings();
+    } catch (err) {
+      console.error("Erreur sauvegarde:", err);
+    }
+    setLoading(false);
+  };
+
+  // --- SUPPRESSION (Au cas où tu l'avais dans ton ancien style) ---
+  const handleDelete = async (id) => {
+    if (!window.confirm("Supprimer cette séance ?")) return;
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`http://localhost:5000/api/trainings/${id}`, {
+        headers: { 'x-auth-token': token }
+      });
+      fetchTrainings();
+    } catch (err) {
+      console.error("Erreur suppression:", err);
+    }
+  };
+
+  // Styles focus
+  const handleFocus = (e) => {
+    e.target.style.borderColor = '#ccff00';
+    e.target.style.boxShadow = '0 0 5px rgba(204, 255, 0, 0.2)';
+  };
+  const handleBlur = (e) => {
+    e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+    e.target.style.boxShadow = 'none';
+  };
+
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 100px 20px' }}>
       
-      <header style={{ marginBottom: '30px', textAlign: 'center' }}>
-        <div style={{ width: '50px', height: '50px', background: 'rgba(204, 255, 0, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto', color: '#ccff00' }}>
-          <IconJournal />
+      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+        {/* --- ICÔNE EN-TÊTE --- */}
+        <div style={{ 
+          width: '70px', height: '70px', margin: '0 auto 15px auto', 
+          background: 'rgba(204, 255, 0, 0.1)', 
+          border: '2px solid #ccff00', 
+          borderRadius: '50%', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          color: '#ccff00', 
+          boxShadow: '0 0 20px rgba(204, 255, 0, 0.2)' 
+        }}>
+          <FaBook size={30} />
         </div>
-        <h1 style={{ fontSize: '1.8rem', margin: 0 }}>Journal d'Entraînement</h1>
-        <p style={{ color: '#888', marginTop: '5px' }}>Note tes séances et reçois des conseils</p>
+        
+        <h1 style={{ fontSize: '2rem', margin: 0, color: 'white' }}>Mon Journal</h1>
+        <p style={{ color: '#888', marginTop: '5px' }}>Enregistre et analyse tes séances</p>
       </header>
+
+      {/* ========================================== */}
+      {/* 1. LE NOUVEAU FORMULAIRE (DARK / NEON)     */}
+      {/* ========================================== */}
+      <form 
+        onSubmit={handleSubmit} 
+        className="card" 
+        style={{ 
+          background: 'rgba(26, 26, 26, 0.2)', padding: '25px', borderRadius: '20px', 
+          marginBottom: '40px', border: '1px solid rgba(255,255,255,0.05)'
+        }}
+      >
+        <h3 style={{ color: 'white', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <FaBook color="#ccff00" /> Nouvelle séance
+        </h3>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ color: 'white', fontSize: '0.9rem', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
+            Thème de la séance
+          </label>
+          <input 
+            type="text" value={theme} onChange={(e) => setTheme(e.target.value)}
+            placeholder="Ex: Défense smash, Filet..." 
+            style={{
+              width: '100%', padding: '12px 25px', background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '9999px',
+              color: 'white', outline: 'none', fontSize: '0.95rem', transition: 'all 0.3s'
+            }}
+            onFocus={handleFocus} onBlur={handleBlur} required
+          />
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ color: 'white', fontSize: '0.9rem', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
+            Tes sensations / Notes
+          </label>
+          <textarea 
+            value={notes} onChange={(e) => setNotes(e.target.value)}
+            placeholder="Comment t'es-tu senti ?..." 
+            style={{
+              width: '100%', padding: '15px', background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', /* Rectangle doux */
+              color: 'white', outline: 'none', minHeight: '100px', resize: 'vertical',
+              fontSize: '0.95rem', fontFamily: 'var(--font-main)', transition: 'all 0.3s'
+            }}
+            onFocus={handleFocus} onBlur={handleBlur}
+          />
+        </div>
+
+        <div style={{ marginBottom: '25px' }}>
+          <label style={{ color: 'white', fontSize: '0.9rem', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span>Note de satisfaction</span>
+            <span style={{ color: '#ccff00' }}>{rating}/10</span>
+          </label>
+          <input 
+            type="range" min="1" max="10" value={rating} onChange={(e) => setRating(e.target.value)}
+            style={{ width: '100%', cursor: 'pointer', accentColor: '#ccff00' }}
+          />
+        </div>
+
+        <button 
+          type="submit" disabled={loading}
+          style={{ 
+            width: '100%', padding: '15px', background: '#ccff00', border: 'none', 
+            color: 'black', fontFamily: 'Montserrat, sans-serif', fontWeight: 800, 
+            fontSize: '1rem', borderRadius: '9999px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', textTransform: 'uppercase'
+          }}
+        >
+          {loading ? 'Analyse IA...' : <><FaCheck style={{ marginRight: '8px' }} /> Enregistrer & Analyser</>}
+        </button>
+      </form>
+
+
+      {/* ========================================== */}
+      {/* 2. L'ANCIEN STYLE POUR L'HISTORIQUE        */}
+      {/* ========================================== */}
+      <h2 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#fff' }}>Historique de tes entraînements</h2>
       
-      <div className="card" style={{ marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px auto' }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '10px', color: '#ccc', fontWeight: 'bold' }}>
-              Thème de la séance
-            </label>
-            <input 
-              type="text" placeholder="Ex: Défense smash, Filet..." 
-              value={formData.theme} onChange={e => setFormData({...formData, theme: e.target.value})}
-              required
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '10px', color: '#ccc', fontWeight: 'bold' }}>
-              Tes sensations / Notes
-            </label>
-            <textarea 
-              placeholder="Comment t'es-tu senti ?..." 
-              value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}
-              rows="3"
-            />
-          </div>
-          <div>
-            <label>Note de satisfaction : <span style={{ color: '#ccff00', fontWeight: 'bold' }}>{formData.rating}/10</span></label>
-            <input 
-              type="range" min="0" max="10" 
-              value={formData.rating} onChange={e => setFormData({...formData, rating: e.target.value})}
-              style={{ width: '100%', accentColor: '#ccff00', cursor: 'pointer' }}
-            />
-          </div>
-          <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '10px' }}>
-            {loading ? '⏳ Analyse IA...' : 'Enregistrer & Analyser'}
-          </button>
-        </form>
-      </div>
-
-      <div>
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '20px' }}>Historique récent</h3>
-        {trainings.length === 0 && <p style={{ color: '#666', textAlign: 'center' }}>Aucune séance enregistrée.</p>}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
-          {trainings.map(training => (
-            <div key={training._id} className="card" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              
-              <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h4 style={{ margin: 0, color: 'white', fontSize: '1.1rem' }}>{training.theme}</h4>
-                  <span style={{ color: '#666', fontSize: '0.85rem' }}>{new Date(training.date).toLocaleDateString()}</span>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <div style={{ 
-                    background: training.rating >= 7 ? 'rgba(204, 255, 0, 0.15)' : 'rgba(255, 255, 255, 0.1)', 
-                    color: training.rating >= 7 ? '#ccff00' : '#ccc',
-                    padding: '5px 10px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' 
-                  }}>
-                    {training.rating}/10
-                  </div>
-                  
-                  <div className="delete-btn" onClick={() => deleteTraining(training._id)} title="Supprimer la séance">
-                    <IconTrash />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <p style={{ color: '#ccc', margin: 0, fontStyle: 'italic', fontSize: '0.95rem' }}>"{training.notes}"</p>
-                {training.aiFeedback && (
-                  <div style={{ marginTop: 'auto', background: 'rgba(204, 255, 0, 0.03)', border: '1px solid rgba(204, 255, 0, 0.2)', borderRadius: '12px', padding: '15px' }}>
-                    <strong style={{ color: '#ccff00', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px', fontSize: '0.85rem' }}>
-                      ✨ Conseil du Coach
-                    </strong>
-                    <p style={{ margin: 0, color: '#ddd', fontSize: '0.9rem', lineHeight: '1.5' }}>{training.aiFeedback}</p>
-                  </div>
-                )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        {trainings.map(training => (
+          <div key={training._id} className="card" style={{ 
+            background: 'var(--card-bg)', 
+            border: '1px solid var(--card-border)', 
+            padding: '20px', 
+            borderRadius: '16px' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.2rem' }}>{training.theme}</h3>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>{training.rating}/10</span>
+                {/* Bouton de suppression discret */}
+                <button onClick={() => handleDelete(training._id)} style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '5px' }}>
+                  <FaTrash />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+            
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '15px', fontStyle: 'italic' }}>
+              Le {new Date(training.date).toLocaleDateString()}
+            </p>
+            
+            <p style={{ color: 'var(--text-main)', fontSize: '1rem', marginBottom: '15px', lineHeight: '1.5' }}>
+              {training.notes}
+            </p>
+
+            {training.aiFeedback && (
+              <div style={{ background: 'rgba(204, 255, 0, 0.05)', padding: '15px', borderRadius: '10px', borderLeft: '4px solid var(--primary)' }}>
+                <strong style={{ color: 'var(--primary)', display: 'block', marginBottom: '5px' }}>Coach IA :</strong>
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>{training.aiFeedback}</p>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {trainings.length === 0 && (
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>
+            Aucun entraînement pour le moment.
+          </p>
+        )}
       </div>
+
     </div>
   );
 }

@@ -20,12 +20,12 @@ export default function PrepaPage() {
 
   // --- SUGGESTIONS ---
   const suggestions = [
-    "Explosivité & Sauts", 
-    "Cardio & Endurance", 
-    "Jambes & Footwork", 
-    "Gainage & Core", 
-    "Vitesse & Réflexes",
-    "Récupération Active"
+    "Explosivité", 
+    "Cardio", 
+    "Footwork", 
+    "Gainage", 
+    "Vitesse",
+    "Récup"
   ];
 
   const closeModal = () => setModal({ ...modal, isOpen: false });
@@ -103,12 +103,12 @@ export default function PrepaPage() {
         <div style={{ width: '60px', height: '60px', background: 'rgba(204, 255, 0, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px auto', color: '#ccff00' }}>
           <FaDumbbell size={30} />
         </div>
-        <h1 style={{ fontSize: '2rem', margin: 0, color: 'white' }}>Générateur Physique</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: '800', margin: 0, color: 'white' }}>Générateur Physique</h1>
         <p style={{ color: '#888', marginTop: '10px' }}>Crée des séances sur-mesure avec l'IA</p>
       </header>
 
       {/* --- CARD DE RECHERCHE --- */}
-      <div className="card" style={{ background: '#1a1a1a', padding: '30px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '40px' }}>
+      <div className="card" style={{ background: 'rgba(26, 26, 26, 0)', padding: '30px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '40px' }}>
         <form onSubmit={handleGenerate} style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
           
           <label style={{ color: '#ccc', fontWeight: 'bold' }}>Ton objectif aujourd'hui ?</label>
@@ -137,19 +137,87 @@ export default function PrepaPage() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {/* INPUT AMÉLIORÉ */}
             <input 
               type="text" 
               placeholder="Ou écris ton propre objectif..." 
               value={focus}
               onChange={(e) => setFocus(e.target.value)}
-              style={{ flex: 1, padding: '15px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', color: 'white', outline: 'none' }}
+              style={{ 
+                width: '100%', 
+                padding: '16px 20px', 
+                borderRadius: '14px', 
+                border: '1px solid rgba(255, 255, 255, 0.1)', 
+                background: 'rgba(255, 255, 255, 0.03)', 
+                color: 'white', 
+                outline: 'none',
+                fontSize: '1rem',
+                transition: 'all 0.3s ease',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#ccff00';
+                e.target.style.background = 'rgba(204, 255, 0, 0.02)';
+                e.target.style.boxShadow = '0 0 15px rgba(204, 255, 0, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = 'rgba(255, 255, 255, 0.03)';
+                e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)';
+              }}
             />
-            <button type="submit" disabled={loading} style={{ padding: '0 30px', borderRadius: '10px', background: '#ccff00', color: 'black', fontWeight: 'bold', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {loading ? '...' : <><FaFire /> GO</>}
+
+            {/* BOUTON AMÉLIORÉ */}
+            <button 
+              type="submit" 
+              disabled={loading} 
+              style={{ 
+                width: '100%',
+                padding: '16px', 
+                borderRadius: '14px', 
+                background: loading ? '#444' : '#ccff00', 
+                color: 'black', 
+                fontWeight: '800', 
+                fontSize: '1rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                border: 'none', 
+                cursor: loading ? 'not-allowed' : 'pointer', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '12px',
+                transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                boxShadow: loading ? 'none' : '0 4px 15px rgba(204, 255, 0, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(204, 255, 0, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = loading ? 'none' : '0 4px 15px rgba(204, 255, 0, 0.3)';
+              }}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <style>{`
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                  `}</style>
+                  <div style={{ width: '18px', height: '18px', border: '2px solid black', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  GÉNÉRATION...
+                </span>
+              ) : (
+                <>
+                  <FaFire style={{ fontSize: '1.2rem' }} />
+                  Générer ma séance
+                </>
+              )}
             </button>
           </div>
-
         </form>
       </div>
 

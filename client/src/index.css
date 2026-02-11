@@ -182,36 +182,54 @@ body {
   transform: scale(0.98);
 }
 
-/* --- INPUTS & FORMULAIRES --- */
-input, select, textarea {
-  background-color: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--card-border);
-  color: white;
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 1rem;
-  width: 100%;
-  font-family: inherit;
-  transition: all 0.3s ease;
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-}
-
+/* 1. INPUTS CLASSIQUES (Texte, Email, Password, TextArea...) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
 select {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 50px;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ccff00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 20px center;
-  background-size: 20px;
+  /* Forme Pillule */
+  border-radius: 9999px !important;
+  /* Plus de padding sur les côtés pour la forme arrondie */
+  padding-left: 25px !important;
+  padding-right: 25px !important;
+  
+  /* Bordure de base fine */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important; /* On enlève l'outline natif moche */
+  transition: all 0.3s ease;
 }
 
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  background-color: rgba(0, 0, 0, 0.6);
-  box-shadow: 0 0 0 4px rgba(204, 255, 0, 0.1);
+/* 2. ÉTAT FOCUS (Quand on clique dedans) */
+input:focus,
+textarea:focus,
+select:focus {
+  /* Bordure Néon ULTRA FINE (1px demandé) */
+  border-color: #ccff00 !important;
+  border-width: 1px !important;
+  /* On enlève les grosses ombres si il y en avait */
+  box-shadow: 0 0 5px rgba(204, 255, 0, 0.2) !important; /* Légère lueur subtile */
+}
+
+/* --- CORRECTION POUR LES TEXTAREA (ex: Compétitions / Journal) --- */
+textarea {
+  border-radius: 12px !important; /* Remet un arrondi classique */
+  padding: 15px !important; /* Remet un padding normal, moins large sur les côtés */
+  min-height: 100px; /* Assure une bonne hauteur de base */
+  resize: vertical; /* Permet à l'utilisateur de l'agrandir de haut en bas si besoin */
+}
+
+/* --- TYPOGRAPHIE DES BOUTONS --- */
+button, 
+.btn-primary, 
+form button[type="submit"], 
+.custom-select /* Si tu veux aussi l'appliquer au faux menu déroulant */ {
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 800 !important;
+  border-radius: 999px !important; /* Forme pillule */
+
+  /* Optionnel : tu peux rajouter text-transform: uppercase; si tu veux tout en majuscules */
 }
 
 /* --- STAT CARDS --- */
@@ -312,7 +330,7 @@ input:focus, select:focus, textarea:focus {
     bottom: auto;
     width: 70px;
     height: auto;
-    padding: 30px 0;
+    padding: 10px 0;
     border-radius: 50px;
     
     background: rgba(10, 20, 18, 0.6);
@@ -421,4 +439,115 @@ input:focus, select:focus, textarea:focus {
 }
 .dropdown-item.danger:hover {
   background: rgba(255, 68, 68, 0.1);
+}
+
+/* --- MENU FLOTTANT (Base Desktop / Vertical) --- */
+.bottom-nav {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column; /* Vertical par défaut */
+  align-items: center;
+  gap: 20px;
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 20px 10px; /* On garde ton padding réduit */
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+}
+
+/* --- ADAPTATION MOBILE (Horizontal) --- */
+@media (max-width: 768px) {
+  .bottom-nav {
+    /* On réinitialise le positionnement vertical */
+    top: auto;
+    left: 50%;
+    bottom: 20px; /* Distance du bord bas */
+    transform: translateX(-50%);
+    
+    /* On passe en horizontal */
+    flex-direction: row; 
+    padding: 2px 10px; /* Padding réduit en hauteur, large sur les côtés */
+    min-width: 280px;
+    justify-content: center;
+    height: 60px;
+    gap: 20px; /* Plus d'espace entre les icônes en horizontal */
+  }
+
+  /* On s'assure que le contenu ne passe pas sous le menu */
+  .content-container {
+    padding-bottom: 100px; 
+  }
+}
+
+.nav-item.active {
+  background: #ccff00;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Si tu affiches le texte ("Accueil", etc.) uniquement sur Desktop */
+@media (max-width: 768px) {
+  .nav-item span {
+    display: none; /* Cache le texte sur mobile pour un look épuré */
+  }
+}
+
+/* --- ADAPTATION MOBILE (Horizontal - Fin & Harmonisé) --- */
+@media (max-width: 767px) {
+  .bottom-nav {
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    padding: 8px 8px; /* Pillule fine */
+    gap: 20px;
+    border-radius: 9999px;
+    width: auto;
+    min-width: 220px;
+    max-width: 90%;
+  }
+
+.nav-item .nav-icon, 
+  .nav-item .trophy-icon,
+  .nav-item svg {
+    stroke: var(--text-muted) !important; /* Utilise ta variable grise */
+    color: var(--text-muted) !important;
+    opacity: 0.6;
+  }
+
+  /* État ACTIF : Force le NOIR et l'opacité pleine */
+  .nav-item.active .nav-icon, 
+  .nav-item.active .trophy-icon,
+  .nav-item.active svg {
+    stroke: #000000 !important;
+    color: #000000 !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Dans ton fichier index.css */
+
+.profile-input-container input {
+  /* On augmente l'espace pour laisser la place à l'icône */
+  padding-left: 50px !important; 
+}
+
+/* On s'assure que l'icône ne bouge pas du centre vertical */
+.profile-input-container svg {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  pointer-events: none;
+  color: #888;
 }

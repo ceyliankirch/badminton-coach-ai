@@ -3,8 +3,10 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const multer = require('multer'); // <--- NOUVEAU
-const axios = require('axios');   // <--- NOUVEAU
+// multer n'est plus strictement nécessaire si tu ne fais plus d'upload d'image, 
+// mais je le laisse au cas où tu en aurais besoin plus tard.
+const multer = require('multer'); 
+const axios = require('axios');   
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
@@ -15,11 +17,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Configuration Multer (Pour gérer l'upload d'images en mémoire)
+// Configuration Multer (gardée au cas où, mais plus utilisée pour l'avatar)
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Limite 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // Connexion à MongoDB
@@ -40,7 +42,8 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  avatar: { type: String, default: "" }, // <--- AJOUTÉ : Pour stocker l'URL de l'avatar
+  username: { type: String, unique: true, sparse: true }, // <--- NOUVEAU : Champ pour le pseudo (sparse permet d'avoir des null/undefined uniques)
+  avatar: { type: String, default: "" }, 
   date: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', UserSchema);
@@ -121,8 +124,8 @@ app.post('/api/auth/register', async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    // On renvoie aussi l'avatar (vide au début)
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
+    // On renvoie aussi les nouveaux champs
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, username: user.username, avatar: user.avatar } });
   } catch (err) {
     res.status(500).send('Erreur serveur');
   }
@@ -138,8 +141,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: 'Identifiants invalides' });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    // On renvoie l'avatar actuel
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, username: user.username, avatar: user.avatar } });
   } catch (err) {
     res.status(500).send('Erreur serveur');
   }
@@ -160,7 +162,7 @@ app.get('/api/home/summary', auth, async (req, res) => {
       `- ${t.theme} (Note: ${t.rating}/10, Sensations: "${t.notes}")`
     ).join('\n');
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // J'ai mis un modèle standard
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
     const prompt = `
       Agis comme un coach sportif personnel. Voici les 3 dernières séances :
       ${trainingsText}
@@ -343,35 +345,26 @@ app.delete('/api/competitions/:id', auth, async (req, res) => {
 
 
 // =================================================================
-// F. UTILISATEUR & AVATAR (NOUVELLE SECTION)
+// F. UTILISATEUR & PROFIL (NOUVELLE SECTION)
 // =================================================================
 
 // @route   POST api/user/generate-avatar
-app.post('/api/user/generate-avatar', auth, upload.single('image'), async (req, res) => {
+// NOUVEAU : On n'utilise plus upload.single('image') car c'est du text-to-image
+app.post('/api/user/generate-avatar', auth, async (req, res) => {
   try {
-    // 1. Validation de l'image
-    if (!req.file) {
-      return res.status(400).json({ msg: 'Aucune image fournie' });
+    const { prompt } = req.body;
+    
+    if (!prompt) {
+      return res.status(400).json({ msg: 'Le prompt est manquant' });
     }
 
-    const prompt = req.body.prompt;
-    console.log("📸 Image reçue, envoi à l'IA...");
+    console.log("🎨 Demande de génération d'avatar avec le prompt :", prompt);
 
-    // -------------------------------------------------------------
-    // LOGIQUE DE GÉNÉRATION (À ADAPTER SELON TON API D'IMAGE)
-    // -------------------------------------------------------------
-    // Si tu as une vraie API d'image (ex: Stable Diffusion, OpenAI DALL-E) :
-    // const base64Image = req.file.buffer.toString('base64');
-    // const aiResponse = await axios.post('URL_DE_TON_API_IMAGE', { ... });
-    // const newAvatarUrl = aiResponse.data.url;
-
-    // --- MODE SIMULATION (POUR QUE ÇA MARCHE DIRECT) ---
-    // On génère un avatar unique via Dicebear pour voir le changement immédiatement
-    const randomSeed = Math.floor(Math.random() * 99999) + "3d"; 
-    // Utilisation d'un style différent (ex: 'notionists' ou 'avataaars') ou params différents
-    const newAvatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${req.user.id}-${Date.now()}&backgroundColor=b6e3f4`;
-    // -------------------------------------------------------------
-
+    // --- SIMULATION DE GÉNÉRATION (Text-to-Image) ---
+    // Tu remplaceras ceci par l'appel à ton API (DALL-E, Banana, etc.)
+    const randomSeed = Math.floor(Math.random() * 99999); 
+    const newAvatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${randomSeed}&backgroundColor=transparent`;
+    
     // 2. Mise à jour en Base de Données
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'Utilisateur non trouvé' });
@@ -385,6 +378,58 @@ app.post('/api/user/generate-avatar', auth, upload.single('image'), async (req, 
   } catch (err) {
     console.error("Erreur Avatar:", err);
     res.status(500).send('Erreur lors de la génération de l\'avatar');
+  }
+});
+
+// @route   PUT api/user/profile
+// NOUVEAU : Route pour mettre à jour les infos du profil
+app.put('/api/user/profile', auth, async (req, res) => {
+  const { name, email, username, password } = req.body;
+
+  try {
+    // 1. On cherche l'utilisateur actuel
+    let user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: 'Utilisateur non trouvé' });
+
+    // 2. Vérification si l'email ou le pseudo est déjà pris par un AUTRE utilisateur
+    if (email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) return res.status(400).json({ msg: 'Cet email est déjà utilisé' });
+    }
+    
+    if (username && username !== user.username) {
+      const usernameExists = await User.findOne({ username });
+      if (usernameExists) return res.status(400).json({ msg: 'Ce nom d\'utilisateur est déjà pris' });
+    }
+
+    // 3. Mise à jour des champs basiques
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (username !== undefined) user.username = username; // Permet d'enregistrer une chaîne vide
+
+    // 4. Mise à jour du mot de passe (si fourni)
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    // 5. On renvoie les infos mises à jour (sans le mot de passe bien sûr)
+    res.json({
+      msg: 'Profil mis à jour avec succès',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        avatar: user.avatar
+      }
+    });
+
+  } catch (err) {
+    console.error("Erreur mise à jour profil:", err);
+    res.status(500).send('Erreur serveur lors de la mise à jour');
   }
 });
 
