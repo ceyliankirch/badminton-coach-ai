@@ -126,17 +126,62 @@ const auth = (req, res, next) => {
 
 // --- A. AUTHENTIFICATION ---
 app.post('/api/auth/register', async (req, res) => {
+  console.log("1. 📩 Requête inscription reçue !");
+  
+  // Test 1 : Est-ce que le body arrive ?
+  console.log("2. 📦 Données reçues :", req.body);
+  if (!req.body) {
+    console.error("❌ ERREUR : req.body est vide ! (Problème express.json ?)");
+    return res.status(500).json({ msg: "Body vide" });
+  }
+
   const { name, email, password } = req.body;
+
+  // Test 2 : Est-ce que la DB est connectée ?
+  // 0: déconnecté, 1: connecté, 2: connexion en cours, 3: déconnexion
+  console.log("3. 🔌 État MongoDB :", mongoose.connection.readyState);
+  if (mongoose.connection.readyState !== 1) {
+    console.error("❌ ERREUR : MongoDB n'est pas connecté !");
+    return res.status(500).json({ msg: "Erreur connexion DB" });
+  }
+
+  // Test 3 : Est-ce que le secret est chargé ?
+  console.log("4. 🔑 JWT_SECRET présent ?", !!process.env.JWT_SECRET);
+  if (!process.env.JWT_SECRET) {
+    console.error("❌ ERREUR : JWT_SECRET manquant !");
+    return res.status(500).json({ msg: "Config serveur manquante" });
+  }
+
   try {
+    console.log("5. 🔍 Recherche utilisateur...");
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ msg: "L'utilisateur existe déjà" });
+    if (user) {
+      console.log("⚠️ Utilisateur existe déjà");
+      return res.status(400).json({ msg: "L'utilisateur existe déjà" });
+    }
+
+    console.log("6. 🔨 Création utilisateur...");
     user = new User({ name, email, password });
+
+    console.log("7. 🧂 Hashage mot de passe...");
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
-    await user.save();
+
+    console.log("8. 💾 Sauvegarde en BDD...");
+    await user.save(); // <--- C'est souvent ici que ça plante si l'IP MongoDB bloque
+    console.log("✅ Sauvegarde réussie !");
+
+    console.log("9. 🎫 Génération Token...");
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    console.log("🎉 SUCCÈS TOTAL !");
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, username: user.username, avatar: user.avatar } });
-  } catch (err) { res.status(500).send('Erreur serveur'); }
+
+  } catch (err) {
+    console.error("❌ CRASH DANS LE TRY/CATCH :", err);
+    // On renvoie l'erreur exacte au frontend pour que tu la voies dans l'inspecteur
+    res.status(500).json({ msg: 'Erreur interne', details: err.message, stack: err.stack });
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
