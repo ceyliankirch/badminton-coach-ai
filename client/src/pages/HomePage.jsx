@@ -2,18 +2,19 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 import { IconJournal, IconDumbbell } from '../components/Icons';
-import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt } from 'react-icons/fa'; 
+import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt, FaUser } from 'react-icons/fa'; // FaUser ajouté
 import CustomModal from '../components/CustomModal';
 
 export default function HomePage() {
   // --- ÉTATS ---
-  const [userData, setUserData] = useState(null); // On stocke tout l'objet user ici
+  const [userData, setUserData] = useState(null); 
   const [stats, setStats] = useState({ trainingCount: 0, compCount: 0, prepaCount: 0 });
   const [recentTrainings, setRecentTrainings] = useState([]); 
   
-  const [aiSummary, setAiSummary] = useState("Clique sur le bouton reload pour lancer une analyse détaillée de tes performances.");
+  const [aiSummary, setAiSummary] = useState("Clique sur le bouton reload pour lancer une analyse détaillée.");
   const [loadingAi, setLoadingAi] = useState(false); 
 
+  // Phrase de motivation (uniquement si connecté)
   const [motivationPhrase, setMotivationPhrase] = useState("Prêt à tout casser aujourd'hui ? 🔥");
 
   const [modal, setModal] = useState({
@@ -25,32 +26,22 @@ export default function HomePage() {
 
   // --- CONSTANTES ---
   const API_URL = import.meta.env.VITE_API_URL;
-  // Avatar par défaut si non connecté (Tu peux changer le seed 'Guest' pour varier)
-  const GUEST_AVATAR = "https://api.dicebear.com/9.x/adventurer/svg?seed=Guest&backgroundColor=b6e3f4";
   
   const closeModal = () => setModal({ ...modal, isOpen: false });
 
   useEffect(() => {
-    // 1. Récupération User (LocalStorage)
+    // 1. Récupération User
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
         setUserData(JSON.parse(storedUser));
+        
+        // On ne charge la motivation API que si l'utilisateur est connecté
+        fetchMotivation(); 
     }
 
-    // 2. Récupération Motivation (Public - Pas besoin de token)
-    const fetchMotivation = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/home/motivation`);
-        setMotivationPhrase(res.data.message);
-      } catch (err) {
-        console.log("Erreur chargement motivation, garde defaut.");
-      }
-    };
-    fetchMotivation();
-
-    // 3. Récupération des Données (Privé - Besoin de token)
+    // 2. Récupération des Données (Privé)
     const token = localStorage.getItem('token');
-    if (!token) return; // Si pas de token, on s'arrête là pour les données
+    if (!token) return; 
 
     const config = { headers: { 'x-auth-token': token } };
 
@@ -80,13 +71,21 @@ export default function HomePage() {
     fetchData();
   }, [API_URL]);
 
+  const fetchMotivation = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/home/motivation`);
+      setMotivationPhrase(res.data.message);
+    } catch (err) {
+      console.log("Erreur chargement motivation");
+    }
+  };
 
-  // --- REFRESH IA (APPEL API) ---
+
+  // --- REFRESH IA ---
   const refreshAi = async (e) => {
     e.stopPropagation(); 
     const token = localStorage.getItem('token');
     
-    // Si pas connecté, on prévient
     if (!token) {
         setModal({ isOpen: true, title: 'Mode Invité', message: 'Connecte-toi pour utiliser le Coach IA !', type: 'info' });
         return;
@@ -132,6 +131,15 @@ export default function HomePage() {
     overflow: 'hidden'
   };
 
+  // Style CSS pour l'effet 3D gris
+  const guestAvatarStyle = {
+    width: '100%', height: '100%', borderRadius: '50%',
+    // C'est ce dégradé qui fait l'effet 3D sphérique gris
+    background: 'radial-gradient(circle at 35% 35%, #666, #1a1a1a)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: 'inset -5px -5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5)'
+  };
+
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px 20px 100px 20px' }}>
       
@@ -168,33 +176,40 @@ export default function HomePage() {
         height: '40vh', marginBottom: '20px', textAlign: 'center',
       }}>
         
-        {/* AVATAR AVEC GESTION INVITÉ */}
+        {/* AVATAR */}
         <div style={{ 
-          width: '180px', height: '180px', 
+          width: '150px', height: '150px', // Un peu plus petit pour le style 3D propre
           borderRadius: '50%', 
-          border: '4px solid var(--primary)', 
+          // Bordure colorée si connecté, sinon grise discrète
+          border: userData ? '4px solid var(--primary)' : '4px solid #333', 
           padding: '5px', marginBottom: '20px',
-          boxShadow: '0 0 30px rgba(0, 255, 140, 0.3)',
+          boxShadow: userData ? '0 0 30px rgba(0, 255, 140, 0.3)' : 'none',
           background: '#0a0a0a', 
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
-           <img 
-             // Si userData existe, on prend son avatar, sinon l'avatar invité
-             src={userData?.avatar ? userData.avatar : GUEST_AVATAR} 
-             alt="Avatar" 
-             referrerPolicy="no-referrer"
-             style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
-           />
+           {userData?.avatar ? (
+             <img 
+               src={userData.avatar} 
+               alt="Avatar" 
+               referrerPolicy="no-referrer"
+               style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+             />
+           ) : (
+             // --- ICONE 3D GRISE (INVITÉ) ---
+             <div style={guestAvatarStyle}>
+                <FaUser size={60} color="#888" style={{ filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.5))' }} />
+             </div>
+           )}
         </div>
 
-        {/* NOM UTILISATEUR OU CHAMPION */}
+        {/* TEXTE DYNAMIQUE */}
         <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
           Hello <span style={{ color: 'var(--primary)' }}>{userData ? userData.name : 'Champion'}</span> !
         </h1>
         
-        <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic' }}>
-          {motivationPhrase}
+        <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic', maxWidth: '400px', lineHeight: '1.4' }}>
+          {userData ? motivationPhrase : "Connecte-toi pour utiliser toutes mes fonctionnalités."}
         </p>
       </div>
 
