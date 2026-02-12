@@ -181,7 +181,7 @@ export default function HomePage() {
           border: userData ? '4px solid var(--primary)' : '4px solid #333', 
           padding: '5px', marginBottom: '20px',
           boxShadow: userData ? '0 0 30px rgba(0, 255, 140, 0.3)' : 'none',
-          background: '#0a0a0a', // Le fond noir uni est ici
+          background: '#0a0a0a46', // Le fond noir uni est ici
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
