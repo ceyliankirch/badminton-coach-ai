@@ -24,7 +24,7 @@ const cardStyle = {
 
 const buttonBase = {
   padding: '12px 24px',
-  borderRadius: '12px',
+  borderRadius: '25px',
   border: 'none',
   fontWeight: '800', // Plus gras pour le style moderne
   cursor: 'pointer',
@@ -47,7 +47,7 @@ export default function CustomModal({
 
   // --- CONFIGURATION DYNAMIQUE SELON LE TYPE ---
   let config = {
-    color: '#ccff00',     // Vert par défaut
+    color: 'var(--primary)',     // Vert par défaut
     textColor: 'black',
     defaultBtn: 'OK'
   };
@@ -69,7 +69,7 @@ export default function CustomModal({
       break;
     default: // INFO
       config = {
-        color: '#ccff00', // Vert Néon
+        color: 'var(--primary)', // Vert Néon
         textColor: 'black',
         defaultBtn: 'Confirmer'
       };

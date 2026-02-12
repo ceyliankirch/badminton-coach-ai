@@ -86,12 +86,12 @@ function App() {
   return (
     <BrowserRouter>
       <CustomModal 
-        isOpen={confirmModal.isOpen}
-        onClose={closeConfirmModal}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        type={confirmModal.type}
-        onConfirm={confirmModal.onConfirm}
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        type="logout" 
+        title="Déconnexion"
+        message="Es-tu sûr de vouloir quitter l'application ?"
+        onConfirm={handleLogout}
       />
 
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
