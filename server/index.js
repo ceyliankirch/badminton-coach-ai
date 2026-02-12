@@ -17,15 +17,15 @@ const PORT = process.env.PORT || 5000;
 
 // Liste des origines autorisées (Frontend Local + Frontend Production)
 const allowedOrigins = [
-  "http://localhost:5173",                   // Ton frontend en local (Vite)
-  "http://localhost:3000",                   // Ton frontend en local (si autre port)
-  "https://badminton-coach-ai.onrender.com", // Ton frontend sur Render
-  "https://app.tondomaine.ovh"               // Ton futur domaine personnalisé (si tu l'as configuré)
+  "http://localhost:5173",                     // Dev Local
+  "http://localhost:3000",                     // Dev Local (au cas où)
+  "https://badminton-coach-client.onrender.com", // <--- AJOUTE CETTE LIGNE (Ton Frontend)
+  "https://badminton-coach-ai.onrender.com"      // Ton Backend (parfois utile pour les auto-appels)
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // !origin permet d'autoriser les requêtes sans origine (ex: Postman ou serveur à serveur)
+    // Autorise les requêtes sans origine (ex: Postman, App mobile native) ou si l'origine est dans la liste
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -33,7 +33,7 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Important pour laisser passer les tokens/cookies si besoin
+  credentials: true, 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
