@@ -379,6 +379,35 @@ app.get('/api/prepa/history', auth, async (req, res) => {
   }
 });
 
+// --- SUPPRIMER UN PROGRAMME PHYSIQUE ---
+app.delete('/api/prepa/:id', auth, async (req, res) => {
+  try {
+    const program = await PhysicalProgram.findById(req.params.id);
+
+    // 1. Vérifie si le programme existe
+    if (!program) {
+      return res.status(404).json({ msg: 'Programme non trouvé' });
+    }
+
+    // 2. Vérifie que c'est bien TON programme
+    if (program.userId.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'Non autorisé' });
+    }
+
+    // 3. Supprime
+    await program.deleteOne();
+    
+    res.json({ msg: 'Programme supprimé' });
+
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Programme non trouvé' });
+    }
+    res.status(500).send('Erreur serveur');
+  }
+});
+
 // --- E. COMPÉTITIONS ---
 app.get('/api/competitions', auth, async (req, res) => {
   try { const comps = await Competition.find({ userId: req.user.id }).sort({ date: -1 }); res.json(comps); } 
