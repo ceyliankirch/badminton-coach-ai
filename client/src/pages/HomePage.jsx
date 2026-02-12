@@ -7,15 +7,18 @@ import CustomModal from '../components/CustomModal';
 
 export default function HomePage() {
   const [userName, setUserName] = useState("Coach");
-  const [userAvatar, setUserAvatar] = useState(null); // Pour stocker l'avatar custom
+  const [userAvatar, setUserAvatar] = useState(null); 
   const [stats, setStats] = useState({ trainingCount: 0, compCount: 0, prepaCount: 0 });
   const [recentTrainings, setRecentTrainings] = useState([]); 
   
-  // Message initial invitant à l'action
   const [aiSummary, setAiSummary] = useState("Clique sur le bouton reload pour lancer une analyse détaillée de tes performances.");
   const [loadingAi, setLoadingAi] = useState(false); 
 
-  // --- ÉTAT DU MODAL ---
+  // --- VARIABLE D'ENVIRONNEMENT ---
+  // En local, ça vaut "http://localhost:5000" (si tu l'as mis dans .env)
+  // Sur Render, ça vaudra "https://badminton-coach-ai.onrender.com"
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [modal, setModal] = useState({
     isOpen: false,
     title: '',
@@ -30,7 +33,7 @@ export default function HomePage() {
     if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUserName(parsedUser.name);
-        setUserAvatar(parsedUser.avatar); // On récupère l'avatar s'il existe
+        setUserAvatar(parsedUser.avatar); 
     }
 
     const token = localStorage.getItem('token');
@@ -40,10 +43,11 @@ export default function HomePage() {
 
     const fetchData = async () => {
       try {
+        // --- MODIFICATION ICI : Utilisation de API_URL ---
         const [resTrainings, resPrepa, resComps] = await Promise.all([
-          axios.get('http://localhost:5000/api/trainings', config),
-          axios.get('http://localhost:5000/api/prepa/history', config),
-          axios.get('http://localhost:5000/api/competitions', config)
+          axios.get(`${API_URL}/api/trainings`, config),
+          axios.get(`${API_URL}/api/prepa/history`, config),
+          axios.get(`${API_URL}/api/competitions`, config)
         ]);
 
         setStats({
@@ -62,12 +66,12 @@ export default function HomePage() {
     };
 
     fetchData();
-  }, []);
+  }, [API_URL]); // On ajoute API_URL aux dépendances
 
 
   // --- REFRESH IA (APPEL API) ---
   const refreshAi = async (e) => {
-    e.stopPropagation(); // Empêche d'ouvrir le modal quand on clique juste sur le refresh
+    e.stopPropagation(); 
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -75,19 +79,11 @@ export default function HomePage() {
     setAiSummary("Analyse approfondie de tes données en cours..."); 
 
     try {
-      const res = await axios.get('http://localhost:5000/api/home/summary', {
+      // --- MODIFICATION ICI : Utilisation de API_URL ---
+      const res = await axios.get(`${API_URL}/api/home/summary`, {
         headers: { 'x-auth-token': token }
       });
       setAiSummary(res.data.summary);
-      
-      // Optionnel : Tu peux décommenter ça si tu veux que le modal s'ouvre direct après chargement
-      /* setModal({
-        isOpen: true,
-        title: 'Analyse du Coach IA 🤖',
-        message: res.data.summary,
-        type: 'info'
-      });
-      */
       
     } catch (err) {
       setAiSummary("Impossible de générer l'analyse pour le moment.");
@@ -95,7 +91,6 @@ export default function HomePage() {
     setLoadingAi(false);
   };
 
-  // --- OUVERTURE DU MODAL (LECTURE) ---
   const openAiModal = () => {
     setModal({
       isOpen: true,
@@ -105,7 +100,7 @@ export default function HomePage() {
     });
   };
 
-  // --- STYLE COMMUN ---
+  // --- STYLE ---
   const gridCardStyle = {
     background: 'rgba(26, 26, 26, 0.2)', 
     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -124,7 +119,6 @@ export default function HomePage() {
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px 20px 100px 20px' }}>
       
-      {/* MODAL POUR LIRE LE TEXTE COMPLET */}
       <CustomModal 
         isOpen={modal.isOpen}
         onClose={closeModal}
@@ -163,7 +157,7 @@ export default function HomePage() {
           border: '4px solid var(--primary)', 
           padding: '5px', marginBottom: '20px',
           boxShadow: '0 0 30px rgba(0, 255, 140, 0.3)',
-          background: '#0a0a0a', // Fond noir pour éviter la transparence
+          background: '#0a0a0a', 
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
@@ -171,6 +165,7 @@ export default function HomePage() {
              <img 
                src={userAvatar} 
                alt="Avatar 3D" 
+               referrerPolicy="no-referrer"
                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
              />
           ) : (
@@ -193,7 +188,7 @@ export default function HomePage() {
       
       <div className="dashboard-grid">
 
-        {/* 1. CARTE COACH IA (LARGE & CLIQUABLE) */}
+        {/* 1. CARTE COACH IA */}
         <div 
           className="ai-card-full" 
           onClick={openAiModal} 
@@ -205,7 +200,6 @@ export default function HomePage() {
         >
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             
-            {/* EN-TÊTE DE LA CARTE */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                    <FaRobot color="var(--primary)" size={18} />
@@ -215,31 +209,27 @@ export default function HomePage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    {/* Icône indiquant qu'on peut agrandir */}
-                    <FaExternalLinkAlt size={12} color="#666" />
-                    
-                    {/* Bouton Reload */}
-                    <div 
-                        onClick={refreshAi}
-                        style={{
-                            width: '24px', height: '24px',
-                            background: 'var(--primary)',
-                            borderRadius: '50%',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer',
-                            boxShadow: '0 0 10px rgba(0, 255, 110, 0.2)',
-                        }}
-                    >
-                        <FaSyncAlt 
-                            size={10} 
-                            color="black" 
-                            style={{ animation: loadingAi ? 'spin 1s linear infinite' : 'none' }} 
-                        />
-                    </div>
+                   <FaExternalLinkAlt size={12} color="#666" />
+                   <div 
+                       onClick={refreshAi}
+                       style={{
+                           width: '24px', height: '24px',
+                           background: 'var(--primary)',
+                           borderRadius: '50%',
+                           display: 'flex', alignItems: 'center', justifyContent: 'center',
+                           cursor: 'pointer',
+                           boxShadow: '0 0 10px rgba(0, 255, 110, 0.2)',
+                       }}
+                   >
+                       <FaSyncAlt 
+                           size={10} 
+                           color="black" 
+                           style={{ animation: loadingAi ? 'spin 1s linear infinite' : 'none' }} 
+                       />
+                   </div>
                 </div>
             </div>
 
-            {/* CONTENU TEXTE (TRONQUÉ PROPREMENT SANS BARRE GRISE) */}
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
                 <p style={{ 
                     color: 'white', 
@@ -247,7 +237,6 @@ export default function HomePage() {
                     fontSize: '0.85rem', 
                     lineHeight: '1.5', 
                     fontStyle: loadingAi ? 'italic' : 'normal',
-                    // CSS Magique pour couper après 3 lignes
                     display: '-webkit-box',
                     WebkitLineClamp: '3', 
                     WebkitBoxOrient: 'vertical',
@@ -256,7 +245,6 @@ export default function HomePage() {
                 }}>
                    {aiSummary}
                 </p>
-                {/* J'ai supprimé la div dégradée ici pour enlever la barre grise */}
             </div>
           </div>
         </div>
@@ -335,7 +323,7 @@ export default function HomePage() {
                     <span style={{ color: '#666', fontSize: '0.8rem' }}>
                       {new Date(training.date).toLocaleDateString()}
                     </span>
-                    <span style={{ fontSize: '0.8rem', color: training.rating >= 7 ? '#ccff00' : '#888', fontWeight: 'bold' }}>
+                    <span style={{ fontSize: '0.8rem', color: training.rating >= 7 ? '#005d82' : '#888', fontWeight: 'bold' }}>
                       {training.rating}/10
                     </span>
                   </div>
@@ -347,7 +335,7 @@ export default function HomePage() {
         ) : (
           <Link to="/trainings" style={{ textDecoration: 'none' }}>
             <div className="card" style={{ background: '#1a1a1a', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', border: '1px dashed #555', borderRadius: '12px' }}>
-              <div style={{ background: '#ccff00', padding: '10px', borderRadius: '10px', color: 'black' }}>
+              <div style={{ background: 'var(--journal-bg)', padding: '10px', borderRadius: '10px', color: 'black' }}>
                  <IconJournal />
               </div>
               <div style={{ flex: 1 }}>
