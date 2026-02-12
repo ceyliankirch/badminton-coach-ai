@@ -10,17 +10,35 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-app.get('/', (req, res) => {
-  res.send('🚀 L\'API du Badminton Coach est en ligne et fonctionnelle !');
-});
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Serveur pro sur le port ${PORT}`));
 
 // ==========================================
-// CONFIGURATION
+// 1. CONFIGURATION & SÉCURITÉ (CORS)
 // ==========================================
-app.use(cors());
 
-// --- CRUCIAL : Augmenter la limite pour supporter les images en Base64 ---
+// Liste des origines autorisées (Frontend Local + Frontend Production)
+const allowedOrigins = [
+  "http://localhost:5173",                   // Ton frontend en local (Vite)
+  "http://localhost:3000",                   // Ton frontend en local (si autre port)
+  "https://badminton-coach-ai.onrender.com", // Ton frontend sur Render
+  "https://app.tondomaine.ovh"               // Ton futur domaine personnalisé (si tu l'as configuré)
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // !origin permet d'autoriser les requêtes sans origine (ex: Postman ou serveur à serveur)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log("Bloqué par CORS:", origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Important pour laisser passer les tokens/cookies si besoin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}));
+
+// Augmenter la limite pour supporter les images en Base64 (Avatars)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -32,8 +50,13 @@ mongoose.connect(process.env.MONGO_URI)
 // Configuration Groq
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+// Route de bienvenue (Pour vérifier que le serveur tourne)
+app.get('/', (req, res) => {
+  res.send('🚀 L\'API du Badminton Coach est en ligne et sécurisée !');
+});
+
 // ==========================================
-// 1. MODÈLES (SCHEMAS MONGOOSE)
+// 2. MODÈLES (SCHEMAS MONGOOSE)
 // ==========================================
 
 const UserSchema = new mongoose.Schema({
@@ -82,7 +105,7 @@ const CompetitionSchema = new mongoose.Schema({
 const Competition = mongoose.model('Competition', CompetitionSchema);
 
 // ==========================================
-// 2. MIDDLEWARE D'AUTHENTIFICATION
+// 3. MIDDLEWARE D'AUTHENTIFICATION
 // ==========================================
 const auth = (req, res, next) => {
   const token = req.header('x-auth-token');
@@ -98,7 +121,7 @@ const auth = (req, res, next) => {
 };
 
 // ==========================================
-// 3. ROUTES API
+// 4. ROUTES API
 // ==========================================
 
 // --- A. AUTHENTIFICATION ---
@@ -153,18 +176,6 @@ app.get('/api/trainings', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// --- RÉCUPÉRER L'HISTORIQUE DES SÉANCES PHYSIQUES ---
-app.get('/api/prepa/history', auth, async (req, res) => {
-  try {
-    // On cherche tous les programmes liés à l'ID de l'utilisateur connecté
-    const history = await PhysicalProgram.find({ userId: req.user.id }).sort({ date: -1 });
-    res.json(history);
-  } catch (err) {
-    console.error("Erreur historique physique:", err);
-    res.status(500).json({ message: "Erreur lors de la récupération de l'historique" });
-  }
-});
-
 app.post('/api/trainings', auth, async (req, res) => {
   const { theme, notes, rating } = req.body;
   let aiAdvice = "Pas d'analyse.";
@@ -183,6 +194,16 @@ app.post('/api/trainings', auth, async (req, res) => {
     const saved = await newTraining.save();
     res.status(201).json(saved);
   } catch (err) { res.status(400).json({ message: err.message }); }
+});
+
+app.get('/api/prepa/history', auth, async (req, res) => {
+  try {
+    const history = await PhysicalProgram.find({ userId: req.user.id }).sort({ date: -1 });
+    res.json(history);
+  } catch (err) {
+    console.error("Erreur historique physique:", err);
+    res.status(500).json({ message: "Erreur lors de la récupération de l'historique" });
+  }
 });
 
 // --- D. PRÉPA PHYSIQUE ---
@@ -227,22 +248,15 @@ app.post('/api/competitions', auth, async (req, res) => {
   } catch (error) { res.status(500).json({ error: "Erreur" }); }
 });
 
-// ==========================================
-// F. UTILISATEUR & PROFIL 
-// ==========================================
-
-// --- NOUVELLE ROUTE : Mise à jour de l'avatar depuis la galerie ---
+// --- F. UTILISATEUR ---
 app.post('/api/user/update-avatar', auth, async (req, res) => {
   try {
     const { avatarUrl } = req.body;
     if (!avatarUrl) return res.status(400).json({ msg: 'Aucun avatar fourni' });
-
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'Utilisateur non trouvé' });
-
     user.avatar = avatarUrl;
     await user.save();
-
     console.log("✅ Avatar mis à jour en BDD");
     res.json({ avatarUrl: user.avatar });
   } catch (err) {
@@ -256,31 +270,28 @@ app.put('/api/user/profile', auth, async (req, res) => {
   try {
     let user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'Utilisateur non trouvé' });
-
     if (email && email !== user.email) {
       const emailExists = await User.findOne({ email });
       if (emailExists) return res.status(400).json({ msg: 'Cet email est déjà utilisé' });
       user.email = email;
     }
-    
     if (username !== undefined && username !== user.username) {
       const usernameExists = await User.findOne({ username });
       if (usernameExists) return res.status(400).json({ msg: 'Ce nom d\'utilisateur est déjà pris' });
       user.username = username;
     }
-
     if (name) user.name = name;
     if (password) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
     }
-
     await user.save();
     res.json({ msg: 'Profil mis à jour', user: { id: user.id, name: user.name, email: user.email, username: user.username, avatar: user.avatar } });
   } catch (err) { res.status(500).send('Erreur serveur'); }
 });
 
 // ==========================================
-// 4. DÉMARRAGE SERVEUR
+// 5. DÉMARRAGE SERVEUR
 // ==========================================
-app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
+// IMPORTANT : On écoute sur '0.0.0.0' pour Render
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Serveur pro lancé sur le port ${PORT}`));
