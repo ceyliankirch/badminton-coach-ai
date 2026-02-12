@@ -30,11 +30,10 @@ const handleAuth = async (e) => {
     try {
       if (isLogin) {
         console.log("📡 Envoi de la requête login à l'API..."); // TEST 2
-        const res = await axios.post('http://localhost:5000/api/auth/login', {
-          email,
-          password
-        });
-        console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+        email,
+        password
+      });        console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
         
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
