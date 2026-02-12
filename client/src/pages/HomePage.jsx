@@ -135,7 +135,7 @@ export default function HomePage() {
   const guestAvatarStyle = {
     width: '100%', height: '100%', borderRadius: '50%',
     // C'est ce dégradé qui fait l'effet 3D sphérique gris
-    background: 'radial-gradient(circle at 35% 35%, #666, #1a1a1a)',
+    background: '#1a1a1a',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     boxShadow: 'inset -5px -5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5)'
   };
