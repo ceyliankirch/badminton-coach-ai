@@ -6,8 +6,8 @@ import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt } from 'react-icons/fa'
 import CustomModal from '../components/CustomModal';
 
 export default function HomePage() {
-  const [userName, setUserName] = useState("Coach");
-  const [userAvatar, setUserAvatar] = useState(null); 
+  // --- ÉTATS ---
+  const [userData, setUserData] = useState(null); // On stocke tout l'objet user ici
   const [stats, setStats] = useState({ trainingCount: 0, compCount: 0, prepaCount: 0 });
   const [recentTrainings, setRecentTrainings] = useState([]); 
   
@@ -16,36 +16,46 @@ export default function HomePage() {
 
   const [motivationPhrase, setMotivationPhrase] = useState("Prêt à tout casser aujourd'hui ? 🔥");
 
-  // --- VARIABLE D'ENVIRONNEMENT ---
-  // En local, ça vaut "http://localhost:5000" (si tu l'as mis dans .env)
-  // Sur Render, ça vaudra "https://badminton-coach-ai.onrender.com"
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const [modal, setModal] = useState({
     isOpen: false,
     title: '',
     message: '',
     type: 'info'
   });
+
+  // --- CONSTANTES ---
+  const API_URL = import.meta.env.VITE_API_URL;
+  // Avatar par défaut si non connecté (Tu peux changer le seed 'Guest' pour varier)
+  const GUEST_AVATAR = "https://api.dicebear.com/9.x/adventurer/svg?seed=Guest&backgroundColor=b6e3f4";
   
   const closeModal = () => setModal({ ...modal, isOpen: false });
 
   useEffect(() => {
+    // 1. Récupération User (LocalStorage)
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUserName(parsedUser.name);
-        setUserAvatar(parsedUser.avatar); 
+        setUserData(JSON.parse(storedUser));
     }
 
+    // 2. Récupération Motivation (Public - Pas besoin de token)
+    const fetchMotivation = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/home/motivation`);
+        setMotivationPhrase(res.data.message);
+      } catch (err) {
+        console.log("Erreur chargement motivation, garde defaut.");
+      }
+    };
+    fetchMotivation();
+
+    // 3. Récupération des Données (Privé - Besoin de token)
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) return; // Si pas de token, on s'arrête là pour les données
 
     const config = { headers: { 'x-auth-token': token } };
 
     const fetchData = async () => {
       try {
-        // --- MODIFICATION ICI : Utilisation de API_URL ---
         const [resTrainings, resPrepa, resComps] = await Promise.all([
           axios.get(`${API_URL}/api/trainings`, config),
           axios.get(`${API_URL}/api/prepa/history`, config),
@@ -65,34 +75,27 @@ export default function HomePage() {
       } catch (err) {
         console.error("Erreur dashboard:", err);
       }
-      // Dans le useEffect existant, ajoute cet appel :
-      const fetchMotivation = async () => {
-        try {
-          // Pas besoin de token pour la motivation, c'est public
-          const res = await axios.get(`${API_URL}/api/home/motivation`);
-          setMotivationPhrase(res.data.message);
-        } catch (err) {
-          console.log("Erreur chargement motivation, on garde celle par défaut.");
-        }
-      };
-      fetchMotivation();
     };
 
     fetchData();
-  }, [API_URL]); // On ajoute API_URL aux dépendances
+  }, [API_URL]);
 
 
   // --- REFRESH IA (APPEL API) ---
   const refreshAi = async (e) => {
     e.stopPropagation(); 
     const token = localStorage.getItem('token');
-    if (!token) return;
+    
+    // Si pas connecté, on prévient
+    if (!token) {
+        setModal({ isOpen: true, title: 'Mode Invité', message: 'Connecte-toi pour utiliser le Coach IA !', type: 'info' });
+        return;
+    }
 
     setLoadingAi(true);
     setAiSummary("Analyse approfondie de tes données en cours..."); 
 
     try {
-      // --- MODIFICATION ICI : Utilisation de API_URL ---
       const res = await axios.get(`${API_URL}/api/home/summary`, {
         headers: { 'x-auth-token': token }
       });
@@ -164,6 +167,8 @@ export default function HomePage() {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         height: '40vh', marginBottom: '20px', textAlign: 'center',
       }}>
+        
+        {/* AVATAR AVEC GESTION INVITÉ */}
         <div style={{ 
           width: '180px', height: '180px', 
           borderRadius: '50%', 
@@ -174,24 +179,20 @@ export default function HomePage() {
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
-          {userAvatar ? (
-             <img 
-               src={userAvatar} 
-               alt="Avatar 3D" 
-               referrerPolicy="no-referrer"
-               style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
-             />
-          ) : (
-             <img 
-               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`} 
-               alt="Avatar Default" 
-               style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#222' }}
-             />
-          )}
+           <img 
+             // Si userData existe, on prend son avatar, sinon l'avatar invité
+             src={userData?.avatar ? userData.avatar : GUEST_AVATAR} 
+             alt="Avatar" 
+             referrerPolicy="no-referrer"
+             style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
+           />
         </div>
+
+        {/* NOM UTILISATEUR OU CHAMPION */}
         <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
-          Hello <span style={{ color: 'var(--primary)' }}>{userName}</span> !
+          Hello <span style={{ color: 'var(--primary)' }}>{userData ? userData.name : 'Champion'}</span> !
         </h1>
+        
         <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic' }}>
           {motivationPhrase}
         </p>
