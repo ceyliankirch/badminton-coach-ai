@@ -282,6 +282,64 @@ app.post('/api/trainings', auth, async (req, res) => {
   } catch (err) { res.status(400).json({ message: err.message }); }
 });
 
+
+// --- D. PRÉPA PHYSIQUE (Prompt Amélioré) ---
+app.post('/api/prepa', auth, async (req, res) => {
+  const { focus } = req.body;
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { 
+          role: "system", 
+          content: `Tu es un expert en préparation physique pour le badminton.
+          Tu dois générer une séance complète de 45 minutes structurée en JSON.
+          
+          RÈGLES STRICTES :
+          1. FORMAT JSON UNIQUEMENT : { "warmup": [], "main": [], "cooldown": [] }
+          2. WARMUP : Donne 4 exercices d'échauffement progressif (cardio + articulaire).
+          3. MAIN (Corps de séance) : Crée un circuit intense de 4 à 6 exercices ou situations. Précise les répétitions ou le temps (ex: "30s effort / 30s repos").
+          4. COOLDOWN : Donne 3 exercices de retour au calme ou étirements légers.
+          5. Langue : Français.` 
+        },
+        { 
+          role: "user", 
+          content: `Génère une séance intense focalisée sur : "${focus}".` 
+        }
+      ],
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" } 
+    });
+    res.json(JSON.parse(completion.choices[0].message.content));
+  } catch (error) { 
+    console.error("Erreur IA Prepa:", error);
+    res.status(500).json({ message: "Erreur lors de la génération." }); 
+  }
+});
+
+// --- SAUVEGARDER UN PROGRAMME GÉNÉRÉ ---
+app.post('/api/prepa/save', auth, async (req, res) => {
+  try {
+    const { focus, program } = req.body;
+
+    if (!program) {
+      return res.status(400).json({ msg: "Aucun programme à sauvegarder" });
+    }
+
+    const newProgram = new PhysicalProgram({
+      userId: req.user.id,
+      focus: focus || "Séance Physique",
+      content: program // On stocke le JSON généré par l'IA
+    });
+
+    const saved = await newProgram.save();
+    res.json(saved);
+
+  } catch (err) {
+    console.error("Erreur sauvegarde prépa:", err);
+    res.status(500).send('Erreur serveur lors de la sauvegarde');
+  }
+});
+
 app.get('/api/prepa/history', auth, async (req, res) => {
   try {
     const history = await PhysicalProgram.find({ userId: req.user.id }).sort({ date: -1 });
@@ -290,22 +348,6 @@ app.get('/api/prepa/history', auth, async (req, res) => {
     console.error("Erreur historique physique:", err);
     res.status(500).json({ message: "Erreur lors de la récupération de l'historique" });
   }
-});
-
-// --- D. PRÉPA PHYSIQUE ---
-app.post('/api/prepa', auth, async (req, res) => {
-  const { focus } = req.body;
-  try {
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: "Coach physique. JSON UNIQUEMENT. { \"warmup\": [], \"main\": [], \"cooldown\": [] }." },
-        { role: "user", content: `Séance 45 min focus: "${focus}".` }
-      ],
-      model: "llama-3.3-70b-versatile",
-      response_format: { type: "json_object" } 
-    });
-    res.json(JSON.parse(completion.choices[0].message.content));
-  } catch (error) { res.status(500).json({ message: "Erreur IA." }); }
 });
 
 // --- E. COMPÉTITIONS ---
