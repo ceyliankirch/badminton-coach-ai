@@ -312,7 +312,7 @@ app.delete('/api/trainings/:id', auth, async (req, res) => {
 });
 
 
-// --- D. PRÉPA PHYSIQUE (Prompt Amélioré) ---
+// --- D. PRÉPA PHYSIQUE (Prompt "Anti-Paresse") ---
 app.post('/api/prepa', auth, async (req, res) => {
   const { focus } = req.body;
   try {
@@ -320,31 +320,38 @@ app.post('/api/prepa', auth, async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: `Tu es un expert en préparation physique pour le badminton.
-          Tu dois générer une séance complète de 45 minutes structurée en JSON.
+          content: `Tu es un préparateur physique expert pour le badminton (niveau compétition).
           
-          RÈGLES STRICTES :
-          1. FORMAT JSON UNIQUEMENT : { "warmup": [], "main": [], "cooldown": [] }
-          2. WARMUP : Donne 4 exercices d'échauffement progressif (cardio + articulaire).
-          3. MAIN (Corps de séance) : Crée un circuit intense de 4 à 6 exercices ou situations. Précise les répétitions ou le temps (ex: "30s effort / 30s repos").
-          4. COOLDOWN : Donne 3 exercices de retour au calme ou étirements légers.
-          5. Langue : Français.` 
+          RÈGLES D'OR À RESPECTER SOUS PEINE D'ÉCHEC :
+          1. INTERDICTION formelle d'écrire juste "Exercice" ou "Activité". Tu dois donner des NOMS PRÉCIS (ex: "Burpees", "Fentes sautées", "Shadow 6 points", "Gainage planche").
+          2. PRÉCISION : Ajoute toujours une durée ou un nombre de répétitions (ex: "30s effort", "3 séries de 15").
+          3. STRUCTURE JSON OBLIGATOIRE : { "warmup": [], "main": [], "cooldown": [] }
+          
+          DÉTAILS DU PROGRAMME :
+          - WARMUP : 4 exercices progressifs (mobilité -> cardio léger).
+          - MAIN (Cœur de séance) : 5 à 6 exercices INTENSES liés à l'objectif.
+          - COOLDOWN : 3 exercices de retour au calme.
+          
+          Langue : Français.` 
         },
         { 
           role: "user", 
-          content: `Génère une séance intense focalisée sur : "${focus}".` 
+          content: `Construis une séance complète et détaillée avec pour objectif : "${focus}".` 
         }
       ],
       model: "llama-3.3-70b-versatile",
+      temperature: 0.6, // On baisse un peu la "créativité" pour augmenter la rigueur
       response_format: { type: "json_object" } 
     });
-    res.json(JSON.parse(completion.choices[0].message.content));
+    
+    const generatedData = JSON.parse(completion.choices[0].message.content);
+    res.json(generatedData);
+
   } catch (error) { 
     console.error("Erreur IA Prepa:", error);
     res.status(500).json({ message: "Erreur lors de la génération." }); 
   }
 });
-
 // --- SAUVEGARDER UN PROGRAMME GÉNÉRÉ ---
 app.post('/api/prepa/save', auth, async (req, res) => {
   try {
