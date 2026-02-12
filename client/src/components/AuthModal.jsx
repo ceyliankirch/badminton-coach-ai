@@ -33,7 +33,9 @@ const handleAuth = async (e) => {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         email,
         password
-      });        console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
+      });       
+      
+      console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
         
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -49,11 +51,10 @@ const handleAuth = async (e) => {
         if (firstName.length < 2) throw new Error("Le prénom est trop court.");
 
         // Envoi au backend (le backend attend 'name', on lui envoie firstName)
-        await axios.post('http://localhost:5000/api/auth/register', {
-          name: firstName, 
-          email,
-          password
-        });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+        email,
+        password
+      });       
 
         // SUCCÈS : On ne ferme pas, on redirige vers le Login avec un bandeau
         setSuccessMsg("Compte créé avec succès ! Connectez-vous.");
