@@ -137,7 +137,6 @@ export default function HomePage() {
     // C'est ce dégradé qui fait l'effet 3D sphérique gris
     background: '#1a1a1a',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: 'inset -5px -5px 15px rgba(0,0,0,0.5), 0 10px 20px rgba(0,0,0,0.5)'
   };
 
   return (
