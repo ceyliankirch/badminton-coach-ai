@@ -184,7 +184,7 @@ export default function HomePage() {
           border: userData ? '4px solid var(--primary)' : '4px solid #333', 
           padding: '5px', marginBottom: '20px',
           boxShadow: userData ? '0 0 30px rgba(0, 255, 140, 0.3)' : 'none',
-          background: '#0a0a0a', 
+          background: '#001c1900', 
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
@@ -198,7 +198,7 @@ export default function HomePage() {
            ) : (
              // --- ICONE 3D GRISE (INVITÉ) ---
              <div style={guestAvatarStyle}>
-                <FaUser size={60} color="#888" style={{ filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.5))' }} />
+                <FaUser size={60} color="var(--text-muted)" />
              </div>
            )}
         </div>
