@@ -9,6 +9,9 @@ export default function PrepaPage() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   
+  // --- 0. CONSTANTE API (PROD & DEV) ---
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [modal, setModal] = useState({
     isOpen: false,
     title: '',
@@ -27,7 +30,8 @@ export default function PrepaPage() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:5000/api/prepa/history', {
+      // MODIFICATION ICI
+      const res = await axios.get(`${API_URL}/api/prepa/history`, {
         headers: { 'x-auth-token': token }
       });
       setHistory(res.data);
@@ -44,7 +48,8 @@ export default function PrepaPage() {
     const token = localStorage.getItem('token'); 
     try {
       const config = token ? { headers: { 'x-auth-token': token } } : {};
-      const res = await axios.post('http://localhost:5000/api/prepa', { focus }, config);
+      // MODIFICATION ICI
+      const res = await axios.post(`${API_URL}/api/prepa`, { focus }, config);
       setProgram(res.data);
     } catch (err) {
       console.error(err);
@@ -65,7 +70,8 @@ export default function PrepaPage() {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/prepa/save', { focus, program }, { headers: { 'x-auth-token': token } });
+      // MODIFICATION ICI
+      await axios.post(`${API_URL}/api/prepa/save`, { focus, program }, { headers: { 'x-auth-token': token } });
       fetchHistory(); 
       setModal({ isOpen: true, title: 'Sauvegardé !', message: 'Ajouté à l\'historique.', type: 'info' });
     } catch (err) { console.error(err); }
@@ -77,7 +83,8 @@ export default function PrepaPage() {
       onConfirm: async () => {
         const token = localStorage.getItem('token');
         try {
-          await axios.delete(`http://localhost:5000/api/prepa/${id}`, { headers: { 'x-auth-token': token } });
+          // MODIFICATION ICI
+          await axios.delete(`${API_URL}/api/prepa/${id}`, { headers: { 'x-auth-token': token } });
           setHistory(history.filter(h => h._id !== id));
         } catch (err) { console.error(err); }
       }

@@ -14,6 +14,9 @@ export default function ProfilePage({ setUser }) {
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [avatarList, setAvatarList] = useState([]);
 
+  // --- 0. CONSTANTE API (PROD & DEV) ---
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // --- 1. GÉNÉRATION DE LA GALERIE DICEBEAR ---
   useEffect(() => {
     const generateAvatars = async () => {
@@ -58,7 +61,8 @@ export default function ProfilePage({ setUser }) {
     setLoadingAvatar(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.post('http://localhost:5000/api/user/update-avatar', 
+      // MODIFICATION ICI : Utilisation de API_URL
+      const res = await axios.post(`${API_URL}/api/user/update-avatar`, 
         { avatarUrl: uri }, 
         { headers: { 'x-auth-token': token } }
       );
@@ -80,7 +84,8 @@ export default function ProfilePage({ setUser }) {
     setLoadingProfile(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.put('http://localhost:5000/api/user/profile', profileForm, {
+      // MODIFICATION ICI : Utilisation de API_URL
+      const res = await axios.put(`${API_URL}/api/user/profile`, profileForm, {
         headers: { 'x-auth-token': token }
       });
       localStorage.setItem('user', JSON.stringify(res.data.user));

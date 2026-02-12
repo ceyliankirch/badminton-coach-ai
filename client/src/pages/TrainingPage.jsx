@@ -9,6 +9,9 @@ export default function TrainingPage() {
   const [rating, setRating] = useState(5);
   const [loading, setLoading] = useState(false);
 
+  // --- 1. DÉFINITION DE L'URL API (Prod & Dev) ---
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // --- CHARGEMENT ---
   useEffect(() => {
     fetchTrainings();
@@ -18,7 +21,8 @@ export default function TrainingPage() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:5000/api/trainings', {
+      // Modification ici : Utilisation de API_URL
+      const res = await axios.get(`${API_URL}/api/trainings`, {
         headers: { 'x-auth-token': token }
       });
       setTrainings(res.data);
@@ -36,7 +40,8 @@ export default function TrainingPage() {
     const token = localStorage.getItem('token');
     
     try {
-      await axios.post('http://localhost:5000/api/trainings', 
+      // Modification ici : Utilisation de API_URL
+      await axios.post(`${API_URL}/api/trainings`, 
         { theme, notes, rating },
         { headers: { 'x-auth-token': token } }
       );
@@ -51,12 +56,13 @@ export default function TrainingPage() {
     setLoading(false);
   };
 
-  // --- SUPPRESSION (Au cas où tu l'avais dans ton ancien style) ---
+  // --- SUPPRESSION ---
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer cette séance ?")) return;
     const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:5000/api/trainings/${id}`, {
+      // Modification ici : Utilisation de API_URL
+      await axios.delete(`${API_URL}/api/trainings/${id}`, {
         headers: { 'x-auth-token': token }
       });
       fetchTrainings();
@@ -170,7 +176,7 @@ export default function TrainingPage() {
 
 
       {/* ========================================== */}
-      {/* 2. L'ANCIEN STYLE POUR L'HISTORIQUE        */}
+      {/* 2. L'HISTORIQUE                                */}
       {/* ========================================== */}
       <h2 style={{ fontSize: '1.2rem', marginBottom: '15px', color: '#fff' }}>Historique de tes entraînements</h2>
       

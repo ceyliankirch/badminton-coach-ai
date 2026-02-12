@@ -4,7 +4,7 @@ import { FaTrophy, FaYoutube, FaRobot, FaMedal, FaUsers, FaSave, FaTrash, FaChev
 import CustomModal from '../components/CustomModal'; 
 
 // =====================================================================
-// COMPOSANT : MENU DÉROULANT SUR-MESURE (Importé du Profil)
+// COMPOSANT : MENU DÉROULANT SUR-MESURE
 // =====================================================================
 const CustomSelect = ({ label, name, value, options, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +40,6 @@ const CustomSelect = ({ label, name, value, options, onChange }) => {
         }}
       >
         {selectedOption.label}
-        {/* NOUVEAU : Marge à droite (marginRight) ajoutée sur la flèche */}
         <FaChevronDown style={{ color: '#888', transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: '0.2s', marginRight: '10px' }} />
       </div>
 
@@ -82,10 +81,13 @@ const CustomSelect = ({ label, name, value, options, onChange }) => {
 // PAGE PRINCIPALE : COMPÉTITIONS
 // =====================================================================
 const CompetitionsPage = () => {
+  // --- 0. CONSTANTE API (PROD & DEV) ---
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // --- ÉTATS ---
   const [formData, setFormData] = useState({
     category: 'Tournoi',
-    tableau: 'Simple Homme', // J'ai ajusté la valeur par défaut pour coller aux options
+    tableau: 'Simple Homme', 
     result: 'Victoire',
     scores: {
       set1: { me: '', opp: '' },
@@ -118,7 +120,8 @@ const CompetitionsPage = () => {
     if (!token) return;
 
     try {
-      const res = await axios.get('http://localhost:5000/api/competitions', {
+      // MODIFICATION ICI
+      const res = await axios.get(`${API_URL}/api/competitions`, {
         headers: { 'x-auth-token': token }
       });
       setMatches(res.data);
@@ -152,7 +155,8 @@ const CompetitionsPage = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/competitions', formData, {
+      // MODIFICATION ICI
+      await axios.post(`${API_URL}/api/competitions`, formData, {
         headers: { 'x-auth-token': token }
       });
       
@@ -185,7 +189,8 @@ const CompetitionsPage = () => {
         onConfirm: async () => {
             const token = localStorage.getItem('token');
             try {
-              await axios.delete(`http://localhost:5000/api/competitions/${id}`, {
+              // MODIFICATION ICI
+              await axios.delete(`${API_URL}/api/competitions/${id}`, {
                 headers: { 'x-auth-token': token }
               });
               setMatches(prev => prev.filter(m => m._id !== id));
