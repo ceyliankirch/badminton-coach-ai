@@ -192,7 +192,7 @@ export default function HomePage() {
         <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
           Hello <span style={{ color: 'var(--primary)' }}>{userName}</span> !
         </h1>
-        <p style={{ margin: '10px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic' }}>
+        <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic' }}>
           {motivationPhrase}
         </p>
       </div>
