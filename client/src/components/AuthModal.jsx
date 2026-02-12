@@ -52,6 +52,7 @@ const handleAuth = async (e) => {
 
         // Envoi au backend (le backend attend 'name', on lui envoie firstName)
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+        name: firstName,
         email,
         password
       });       
@@ -118,17 +119,17 @@ const handleAuth = async (e) => {
             </>
           )}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '10px', padding: '10px', borderRadius: '8px', cursor: 'pointer', background: '#ccff00', border: 'none', fontWeight: 'bold' }}>
+          <button type="submit" className="btn-primary" style={{ marginTop: '10px', padding: '10px', borderRadius: '999px', cursor: 'pointer', background: 'var(--primary)', border: 'none', fontWeight: 'bold' }}>
             {isLogin ? 'Se connecter' : "S'inscrire"}
           </button>
         </form>
 
         {/* --- TOGGLE LOGIN/SIGNUP --- */}
-        <p style={{ textAlign: 'center', marginTop: '20px', color: '#ccc', fontSize: '0.9rem' }}>
+        <p style={{ textAlign: 'center', marginTop: '20px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
           <span 
             onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); }} 
-            style={{ color: '#ccff00', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}
+            style={{ color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}
           >
             {isLogin ? "Créer un compte" : "Se connecter"}
           </span>
