@@ -168,6 +168,47 @@ app.get('/api/home/summary', auth, async (req, res) => {
   } catch (err) { res.json({ summary: "Analyse momentanément indisponible." }); }
 });
 
+// --- SYSTÈME DE MOTIVATION QUOTIDIENNE ---
+let dailyMotivation = {
+  text: "Prêt à tout casser aujourd'hui ? 🔥",
+  date: null
+};
+
+app.get('/api/home/motivation', async (req, res) => {
+  const today = new Date().toDateString(); // Ex: "Mon Oct 23 2023"
+
+  // Si on a déjà une phrase pour aujourd'hui, on la renvoie direct (pas d'appel IA)
+  if (dailyMotivation.date === today && dailyMotivation.text) {
+    return res.json({ message: dailyMotivation.text });
+  }
+
+  // Sinon, on génère une nouvelle phrase
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: "Tu es un coach sportif motivant." },
+        { role: "user", content: "Génère une seule phrase courte, motivante et percutante (max 15 mots) pour un joueur de badminton. Alterne aléatoirement entre un conseil physique (cardio, vitesse) ou mental/technique. Tutoiement. Pas de guillemets." }
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    const newQuote = completion.choices[0].message.content;
+    
+    // On sauvegarde en mémoire
+    dailyMotivation = {
+      text: newQuote,
+      date: today
+    };
+
+    res.json({ message: newQuote });
+
+  } catch (error) {
+    console.error("Erreur motivation:", error);
+    // En cas d'erreur, on renvoie une phrase par défaut
+    res.json({ message: "Prêt à dépasser tes limites ?" });
+  }
+});
+
 // --- C. ENTRAÎNEMENTS ---
 app.get('/api/trainings', auth, async (req, res) => {
   try {

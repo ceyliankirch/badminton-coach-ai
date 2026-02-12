@@ -14,6 +14,8 @@ export default function HomePage() {
   const [aiSummary, setAiSummary] = useState("Clique sur le bouton reload pour lancer une analyse détaillée de tes performances.");
   const [loadingAi, setLoadingAi] = useState(false); 
 
+  const [motivationPhrase, setMotivationPhrase] = useState("Prêt à tout casser aujourd'hui ? 🔥");
+
   // --- VARIABLE D'ENVIRONNEMENT ---
   // En local, ça vaut "http://localhost:5000" (si tu l'as mis dans .env)
   // Sur Render, ça vaudra "https://badminton-coach-ai.onrender.com"
@@ -63,6 +65,17 @@ export default function HomePage() {
       } catch (err) {
         console.error("Erreur dashboard:", err);
       }
+      // Dans le useEffect existant, ajoute cet appel :
+      const fetchMotivation = async () => {
+        try {
+          // Pas besoin de token pour la motivation, c'est public
+          const res = await axios.get(`${API_URL}/api/home/motivation`);
+          setMotivationPhrase(res.data.message);
+        } catch (err) {
+          console.log("Erreur chargement motivation, on garde celle par défaut.");
+        }
+      };
+      fetchMotivation();
     };
 
     fetchData();
@@ -179,8 +192,8 @@ export default function HomePage() {
         <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
           Hello <span style={{ color: 'var(--primary)' }}>{userName}</span> !
         </h1>
-        <p style={{ margin: '10px 0 0 0', color: '#888', fontSize: '1.1rem' }}>
-          Prêt à tout casser aujourd'hui ? 🔥
+        <p style={{ margin: '10px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic' }}>
+          {motivationPhrase}
         </p>
       </div>
 
