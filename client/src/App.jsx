@@ -13,7 +13,7 @@ import AuthModal from './components/AuthModal';
 import CustomModal from './components/CustomModal';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
 import { LuTrophy } from 'react-icons/lu'; 
-import { FaUser, FaSignOutAlt, FaChevronDown } from 'react-icons/fa'; // Ajout de FaChevronDown
+import { FaUser, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 
 // --- 1. WRAPPER TROPHÉE ---
 const IconTrophy = ({ color = "var(--text-muted)" }) => (
@@ -46,14 +46,16 @@ function NavItem({ to, icon, label }) {
 
 function App() {
   const [user, setUser] = useState(null); 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Pour AuthModal
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // --- ÉTAT DU MODAL DE CONFIRMATION (Logout / Delete) ---
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
     message: '',
     type: 'info',
+    confirmText: '', // Optionnel si ton CustomModal le gère
     onConfirm: null
   });
 
@@ -67,13 +69,17 @@ function App() {
     }
   }, []);
 
+  // --- LOGIQUE DE DÉCONNEXION ---
   const handleLogout = () => {
     setIsDropdownOpen(false);
+    
+    // On configure le modal pour le mode "LOGOUT" (Orange)
     setConfirmModal({
       isOpen: true,
       title: 'Déconnexion',
       message: 'Voulez-vous vraiment vous déconnecter ?',
-      type: 'danger', 
+      type: 'logout', // Utilise le type 'logout' qu'on a créé
+      confirmText: 'Se déconnecter',
       onConfirm: () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -85,17 +91,23 @@ function App() {
 
   return (
     <BrowserRouter>
+      
+      {/* --- LE MODAL UNIVERSEL --- */}
+      {/* Il lit les infos depuis l'état confirmModal */}
       <CustomModal 
-        isOpen={modal.isOpen}
-        onClose={closeModal}
-        type="logout" 
-        title="Déconnexion"
-        message="Es-tu sûr de vouloir quitter l'application ?"
-        onConfirm={handleLogout}
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.confirmText}
+        onConfirm={confirmModal.onConfirm}
       />
 
+      {/* Modal d'Authentification */}
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
 
+      {/* --- TOP BAR --- */}
       <div className="top-bar">
         <Link to="/" className="logo-box">
           <img src="/assets/bdmcoach_logo.svg" alt="Logo" className="logo" />
@@ -133,6 +145,7 @@ function App() {
                )}
             </div>
 
+            {/* Menu Déroulant */}
             {isDropdownOpen && user && (
                 <div className="dropdown-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
                     <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
