@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 import { IconJournal, IconDumbbell } from '../components/Icons';
-import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt, FaUser } from 'react-icons/fa'; // FaUser ajouté
+import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt, FaUser } from 'react-icons/fa';
 import CustomModal from '../components/CustomModal';
 
 export default function HomePage() {
@@ -34,7 +34,6 @@ export default function HomePage() {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
         setUserData(JSON.parse(storedUser));
-        
         // On ne charge la motivation API que si l'utilisateur est connecté
         fetchMotivation(); 
     }
@@ -131,12 +130,11 @@ export default function HomePage() {
     overflow: 'hidden'
   };
 
-  // Style CSS pour l'effet 3D gris
+  // Style CSS simplifié pour l'avatar invité (plat, fond transparent)
   const guestAvatarStyle = {
     width: '100%', height: '100%', borderRadius: '50%',
-    // C'est ce dégradé qui fait l'effet 3D sphérique gris
-    background: '#1a1a1a',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
+    // Plus de background ni de boxShadow ici, on utilise celui du parent (#0a0a0a)
   };
 
   return (
@@ -177,13 +175,13 @@ export default function HomePage() {
         
         {/* AVATAR */}
         <div style={{ 
-          width: '150px', height: '150px', // Un peu plus petit pour le style 3D propre
+          width: '150px', height: '150px',
           borderRadius: '50%', 
           // Bordure colorée si connecté, sinon grise discrète
           border: userData ? '4px solid var(--primary)' : '4px solid #333', 
           padding: '5px', marginBottom: '20px',
           boxShadow: userData ? '0 0 30px rgba(0, 255, 140, 0.3)' : 'none',
-          background: '#001c1900', 
+          background: '#0a0a0a', // Le fond noir uni est ici
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
@@ -195,9 +193,10 @@ export default function HomePage() {
                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
              />
            ) : (
-             // --- ICONE 3D GRISE (INVITÉ) ---
+             // --- ICONE GRISE PLATE SUR FOND NOIR (INVITÉ) ---
              <div style={guestAvatarStyle}>
-                <FaUser size={60} color="var(--text-muted)" />
+                {/* J'ai retiré le drop-shadow pour un style totalement plat */}
+                <FaUser size={60} color="#555" /> 
              </div>
            )}
         </div>
