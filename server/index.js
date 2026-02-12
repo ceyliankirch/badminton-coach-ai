@@ -282,6 +282,35 @@ app.post('/api/trainings', auth, async (req, res) => {
   } catch (err) { res.status(400).json({ message: err.message }); }
 });
 
+// --- SUPPRIMER UN ENTRAÎNEMENT ---
+app.delete('/api/trainings/:id', auth, async (req, res) => {
+  try {
+    // 1. On cherche l'entraînement
+    const training = await Training.findById(req.params.id);
+
+    // 2. S'il n'existe pas
+    if (!training) {
+      return res.status(404).json({ msg: 'Entraînement non trouvé' });
+    }
+
+    // 3. VÉRIFICATION DE SÉCURITÉ : Est-ce bien TA séance ?
+    if (training.userId.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'Non autorisé' });
+    }
+
+    // 4. Suppression
+    await training.deleteOne();
+    
+    res.json({ msg: 'Entraînement supprimé' });
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Entraînement non trouvé' });
+    }
+    res.status(500).send('Erreur serveur');
+  }
+});
+
 
 // --- D. PRÉPA PHYSIQUE (Prompt Amélioré) ---
 app.post('/api/prepa', auth, async (req, res) => {
@@ -374,6 +403,35 @@ app.post('/api/competitions', auth, async (req, res) => {
     await newComp.save();
     res.json(newComp);
   } catch (error) { res.status(500).json({ error: "Erreur" }); }
+});
+
+// --- SUPPRIMER UNE COMPÉTITION ---
+app.delete('/api/competitions/:id', auth, async (req, res) => {
+  try {
+    const comp = await Competition.findById(req.params.id);
+    
+    // 1. Vérifie si le match existe
+    if (!comp) {
+      return res.status(404).json({ msg: 'Match non trouvé' });
+    }
+
+    // 2. Vérifie que c'est bien TON match
+    if (comp.userId.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'Non autorisé' });
+    }
+
+    // 3. Supprime
+    await comp.deleteOne();
+    
+    res.json({ msg: 'Match supprimé avec succès' });
+
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Match non trouvé' });
+    }
+    res.status(500).send('Erreur serveur');
+  }
 });
 
 // --- F. UTILISATEUR ---
