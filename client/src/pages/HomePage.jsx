@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'; 
 import { IconJournal, IconDumbbell } from '../components/Icons';
-import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt, FaUser } from 'react-icons/fa';
+// ✅ AJOUT DE FaChartLine POUR LA CARTE STATS
+import { FaTrophy, FaRobot, FaSyncAlt, FaExternalLinkAlt, FaUser, FaChartLine } from 'react-icons/fa';
 import CustomModal from '../components/CustomModal';
 
 export default function HomePage() {
@@ -34,7 +35,6 @@ export default function HomePage() {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
         setUserData(JSON.parse(storedUser));
-        // On ne charge la motivation API que si l'utilisateur est connecté
         fetchMotivation(); 
     }
 
@@ -130,11 +130,9 @@ export default function HomePage() {
     overflow: 'hidden'
   };
 
-  // Style CSS simplifié pour l'avatar invité (plat, fond transparent)
   const guestAvatarStyle = {
     width: '100%', height: '100%', borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    // Plus de background ni de boxShadow ici, on utilise celui du parent (#0a0a0a)
   };
 
   return (
@@ -148,16 +146,20 @@ export default function HomePage() {
         type={modal.type}
       />
 
+      {/* ✅ CSS MIS À JOUR POUR LE NOUVEAU LAYOUT */}
       <style>{`
         .dashboard-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr 1fr; /* Mobile : 2 colonnes */
           gap: 15px;
           margin-bottom: 30px;
         }
+        .ai-card-full {
+          grid-column: span 2; /* Mobile : Prend toute la largeur (2 colonnes) */
+        }
         @media (min-width: 768px) {
-          .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
-          .ai-card-full { grid-column: span 3; }
+          .dashboard-grid { grid-template-columns: repeat(4, 1fr); } /* Ordi : 4 colonnes */
+          .ai-card-full { grid-column: span 4; } /* Ordi : Prend toute la largeur (4 colonnes) */
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
@@ -177,11 +179,10 @@ export default function HomePage() {
         <div style={{ 
           width: '150px', height: '150px',
           borderRadius: '50%', 
-          // Bordure colorée si connecté, sinon grise discrète
           border: userData ? '4px solid var(--primary)' : '4px solid #333', 
           padding: '5px', marginBottom: '20px',
           boxShadow: userData ? '0 0 30px rgba(0, 255, 140, 0.3)' : 'none',
-          background: '#0a0a0a46', // Le fond noir uni est ici
+          background: '#0a0a0a46', 
           overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
@@ -193,9 +194,7 @@ export default function HomePage() {
                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} 
              />
            ) : (
-             // --- ICONE GRISE PLATE SUR FOND NOIR (INVITÉ) ---
              <div style={guestAvatarStyle}>
-                {/* J'ai retiré le drop-shadow pour un style totalement plat */}
                 <FaUser size={60} color="#555" /> 
              </div>
            )}
@@ -215,12 +214,13 @@ export default function HomePage() {
       
       <div className="dashboard-grid">
 
-        {/* 1. CARTE COACH IA */}
+        {/* 1. CARTE COACH IA (1.5x plus haute = 165px) */}
         <div 
           className="ai-card-full" 
           onClick={openAiModal} 
           style={{ 
             ...gridCardStyle, 
+            height: '165px', // ✅ Hauteur modifiée ici
             background: 'linear-gradient(135deg, rgba(0, 255, 157, 0.08), rgba(26, 26, 26, 1))',
             border: '1px solid rgba(0, 255, 145, 0.2)', 
           }}
@@ -265,7 +265,7 @@ export default function HomePage() {
                     lineHeight: '1.5', 
                     fontStyle: loadingAi ? 'italic' : 'normal',
                     display: '-webkit-box',
-                    WebkitLineClamp: '3', 
+                    WebkitLineClamp: '4', // ✅ Augmenté pour profiter de la nouvelle hauteur
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     opacity: 0.9
@@ -320,6 +320,22 @@ export default function HomePage() {
             <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Compétitions</h3>
           </div>
         </Link>
+
+        {/* 5. STATS (NOUVELLE CARTE) */}
+        <div style={{ ...gridCardStyle, cursor: 'default' }}
+             onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
+             onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '8px', borderRadius: '8px', color: '#a855f7' }}>
+               <FaChartLine size={20} />
+            </div>
+            <span style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>Bientôt</span>
+          </div>
+          <div>
+            <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Statistiques</h3>
+            <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem', fontStyle: 'italic' }}>Fonctionnalité à venir</p>
+          </div>
+        </div>
 
       </div>
 

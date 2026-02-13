@@ -6,7 +6,7 @@ const overlayStyle = {
   backgroundColor: 'rgba(0, 0, 0, 0.8)',
   backdropFilter: 'blur(5px)',
   display: 'flex', justifyContent: 'center', alignItems: 'center',
-  zIndex: 1000,
+  zIndex: 99999,
   animation: 'fadeIn 0.2s ease-out'
 };
 
