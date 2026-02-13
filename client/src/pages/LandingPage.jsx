@@ -170,10 +170,8 @@ export default function LandingPage({ onEnterApp }) {
       {/* NAVBAR */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '25px 5%', position: 'relative', zIndex: 10 }}>
         <div style={{ fontWeight: '800', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '50px', height: '50px', background: 'var(--primary)', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {/* Remplace par ton logo SVG si tu l'as, sinon un placeholder */}
-            <img src="/assets/bdmcoach_logo.svg" alt="Logo" style={{ padding: '5px' }} onError={(e) => {e.target.style.display='none'; e.target.parentElement.innerHTML = '<div style="width:20px; height:20px; background:#333; border-radius:4px"></div>'}} />
-          </div>
+            <img src="/assets/badmin_logo_large.png" alt="Logo" style={{height: '60px'}} onError={(e) => {e.target.style.display='none'; e.target.parentElement.innerHTML = '<div style="width:20px; height:20px; background:#333; border-radius:4px"></div>'}} />
         </div>
         <button onClick={onEnterApp} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 20px', borderRadius: '99px', color: 'white', cursor: 'pointer', fontSize: '0.9rem', transition: '0.3s' }}>
           Connexion Membre
