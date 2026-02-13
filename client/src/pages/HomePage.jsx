@@ -202,11 +202,11 @@ export default function HomePage() {
         </div>
 
         {/* TEXTE DYNAMIQUE */}
-        <h1 style={{ margin: 0, fontSize: '2.5rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
+        <h1 style={{ margin: 0, fontSize: '2.3rem', color: 'white', fontWeight: '900', letterSpacing: '-1px' }}>
           Hello <span style={{ color: 'var(--primary)' }}>{userData ? userData.name : 'Champion'}</span> !
         </h1>
         
-        <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '1.1rem', fontStyle: 'italic', maxWidth: '400px', lineHeight: '1.4' }}>
+        <p style={{ margin: '8px 0 0 0', color: '#888', fontSize: '0.9rem', fontStyle: 'italic', maxWidth: '400px', lineHeight: '1.4' }}>
           {userData ? motivationPhrase : "Connecte-toi pour utiliser toutes mes fonctionnalités."}
         </p>
       </div>
