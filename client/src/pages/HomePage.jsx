@@ -25,7 +25,7 @@ export default function HomePage() {
   });
 
   // --- CONSTANTES ---
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   
   const closeModal = () => setModal({ ...modal, isOpen: false });
 
@@ -336,9 +336,9 @@ export default function HomePage() {
             <Link to="/trainings" key={training._id} style={{ textDecoration: 'none' }}>
               <div className="card" style={{ background: 'rgba(26, 26, 26, 0.2)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', transition: 'transform 0.2s', borderRadius: '12px' }}>
                 <div style={{ 
-                    background: training.rating >= 7 ? 'rgba(204, 255, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
+                    background: training.rating >= 7 ? 'rgba(0, 204, 255, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
                     padding: '10px', borderRadius: '10px', 
-                    color: training.rating >= 7 ? '#ccff00' : 'white' 
+                    color: training.rating >= 7 ? '#009dff' : 'white' 
                 }}>
                    <IconJournal />
                 </div>

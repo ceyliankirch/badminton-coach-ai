@@ -12,12 +12,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
+    "framer-motion": "^12.34.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6",
     "multer": "^2.0.2"

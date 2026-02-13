@@ -2,6 +2,8 @@
   "dependencies": {
     "@dicebear/collection": "^9.3.1",
     "@dicebear/core": "^9.3.1",
+    "@emailjs/browser": "^4.4.1",
+    "framer-motion": "^12.34.0",
     "groq-sdk": "^0.37.0",
     "mongoose": "^9.1.6",
     "react-router-dom": "^7.13.0"
@@ -12,4 +14,3 @@
     "start": "node index.js"
   }
 }
-

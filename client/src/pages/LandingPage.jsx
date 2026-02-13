@@ -221,7 +221,7 @@ export default function LandingPage({ onEnterApp }) {
         
         {/* Titre Section */}
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '15px' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '15px' }}>
                 Tout ce dont tu as besoin <br/>
                 <span style={{ background: 'linear-gradient(90deg, #3aedba, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>pour performer.</span>
             </h2>

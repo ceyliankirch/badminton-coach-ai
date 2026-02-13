@@ -69,6 +69,18 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+// --- MODÈLE FEEDBACK ---
+const FeedbackSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, enum: ['bug', 'feature'], required: true },
+  message: { type: String, required: true },
+  status: { type: String, default: 'nouveau' }, // 'nouveau', 'en_cours', 'resolu' (pour ton futur dashboard)
+  date: { type: Date, default: Date.now }
+});
+const Feedback = mongoose.model('Feedback', FeedbackSchema);
+
+// --- MODÈLE ENTRAÎNEMENTS ---
+
 const TrainingSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, default: Date.now },
@@ -510,6 +522,27 @@ app.put('/api/user/profile', auth, async (req, res) => {
     await user.save();
     res.json({ msg: 'Profil mis à jour', user: { id: user.id, name: user.name, email: user.email, username: user.username, avatar: user.avatar } });
   } catch (err) { res.status(500).send('Erreur serveur'); }
+});
+
+// --- G. FEEDBACKS ---
+app.post('/api/feedback', auth, async (req, res) => {
+  try {
+    const { type, message } = req.body;
+    
+    // On crée le nouveau retour en l'associant à l'utilisateur connecté (grâce au middleware 'auth')
+    const newFeedback = new Feedback({
+      userId: req.user.id,
+      type,
+      message
+    });
+
+    await newFeedback.save();
+    res.status(201).json({ msg: 'Retour enregistré avec succès', feedback: newFeedback });
+    
+  } catch (err) {
+    console.error("Erreur sauvegarde feedback:", err);
+    res.status(500).json({ msg: 'Erreur serveur lors de l\'enregistrement du retour' });
+  }
 });
 
 // ==========================================

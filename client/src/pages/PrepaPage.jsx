@@ -10,7 +10,7 @@ export default function PrepaPage() {
   const [history, setHistory] = useState([]);
   
   // --- 0. CONSTANTE API (PROD & DEV) ---
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const [modal, setModal] = useState({
     isOpen: false,

@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 // --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
 import CustomModal from './components/CustomModal';
+import FeedbackWidget from './components/FeedbackWidget';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
 import { LuTrophy } from 'react-icons/lu'; 
 import { FaUser, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
@@ -175,6 +176,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage setUser={setUser} />} />
         </Routes>
       </div>
+      <FeedbackWidget userEmail={user?.email} />
 
       <nav className="bottom-nav">
         <NavItem to="/" icon={<IconHome />} label="Accueil" />

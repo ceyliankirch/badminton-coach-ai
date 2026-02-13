@@ -10,24 +10,44 @@ export default function TrainingPage() {
   const [loading, setLoading] = useState(false);
 
   // --- 1. DÉFINITION DE L'URL API (Prod & Dev) ---
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   // --- CHARGEMENT ---
   useEffect(() => {
     fetchTrainings();
   }, []);
 
-  const fetchTrainings = async () => {
+const fetchTrainings = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
+    
     try {
-      // Modification ici : Utilisation de API_URL
       const res = await axios.get(`${API_URL}/api/trainings`, {
         headers: { 'x-auth-token': token }
       });
-      setTrainings(res.data);
+      
+      // 🕵️ LE DÉTECTEUR DE VÉRITÉ :
+      console.log("🔍 CE QUE LE BACKEND RENVOIE :", res.data);
+
+      // --- LOGIQUE DE SÉCURITÉ ANTI-CRASH ---
+      // Cas 1 : Le backend renvoie directement un tableau [...]
+      if (Array.isArray(res.data)) {
+        setTrainings(res.data);
+      } 
+      // Cas 2 : Le backend renvoie un objet qui contient le tableau { trainings: [...] }
+      else if (res.data && Array.isArray(res.data.trainings)) {
+        setTrainings(res.data.trainings);
+      } 
+      // Cas 3 : Rien ne correspond, on met un tableau vide pour éviter le crash
+      else {
+        console.warn("⚠️ Format de données inattendu :", res.data);
+        setTrainings([]); 
+      }
+
     } catch (err) {
       console.error("Erreur chargement entraînements:", err);
+      // En cas d'erreur réseau, on évite aussi le crash
+      setTrainings([]); 
     }
   };
 

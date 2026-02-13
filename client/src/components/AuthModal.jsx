@@ -27,16 +27,21 @@ const handleAuth = async (e) => {
     setError('');
     setSuccessMsg('');
 
+    // ✅ La variable sécurisée est prête
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
     try {
       if (isLogin) {
         console.log("📡 Envoi de la requête login à l'API..."); // TEST 2
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        email,
-        password
-      });       
-      
-      console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
         
+        // ✅ ON UTILISE API_URL ICI
+        const res = await axios.post(`${API_URL}/api/auth/login`, {
+          email,
+          password
+        });       
+        
+        console.log("✅ Réponse reçue du serveur :", res.data); // TEST 3
+          
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
 
@@ -50,12 +55,12 @@ const handleAuth = async (e) => {
         if (!validatePassword(password)) throw new Error("Le mot de passe doit contenir 8 caractères et 1 chiffre.");
         if (firstName.length < 2) throw new Error("Le prénom est trop court.");
 
-        // Envoi au backend (le backend attend 'name', on lui envoie firstName)
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
-        name: firstName,
-        email,
-        password
-      });       
+        // ✅ ON UTILISE API_URL ICI AUSSI
+        const res = await axios.post(`${API_URL}/api/auth/register`, {
+          name: firstName,
+          email,
+          password
+        });       
 
         // SUCCÈS : On ne ferme pas, on redirige vers le Login avec un bandeau
         setSuccessMsg("Compte créé avec succès ! Connectez-vous.");
@@ -66,7 +71,7 @@ const handleAuth = async (e) => {
       setError(err.response?.data?.message || err.response?.data?.msg || err.message || "Une erreur est survenue");
     }
   };
-
+  
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div className="card" style={modalStyle} onClick={(e) => e.stopPropagation()}>
