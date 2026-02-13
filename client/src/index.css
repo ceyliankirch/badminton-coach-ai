@@ -193,6 +193,45 @@ textarea { border-radius: 20px; min-height: 100px; resize: vertical; }
   color: var(--text-muted); pointer-events: none;
 }
 
+/* --- WIDGET FEEDBACK (Responsive) --- */
+
+/* 1. Sur Mobile : Centré en bas par défaut */
+.feedback-wrapper {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centre le bouton et la fenêtre */
+  backdrop-filter: var(--bg-dark) blur(var(--blur));
+}
+
+.feedback-window {
+  position: absolute;
+  bottom: 70px;
+  width: 320px;
+  left: 50%;
+  margin-left: -160px; /* Centre la fenêtre de 320px de large */
+}
+
+/* 2. Sur Ordinateur (écrans > 768px) : En bas à droite */
+@media (min-width: 768px) {
+  .feedback-wrapper {
+    left: auto;
+    right: 30px;
+    transform: none;
+    align-items: flex-end; /* Aligne le contenu sur la droite */
+  }
+  
+  .feedback-window {
+    left: auto;
+    right: 0; /* Aligne la fenêtre avec le bord droit du bouton */
+    margin-left: 0;
+  }
+}
+
 /* --- 6. DROPDOWN & UTILS --- */
 .dropdown-menu {
   position: fixed; top: 75px; right: 20px;
