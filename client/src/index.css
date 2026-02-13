@@ -2,6 +2,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
+  max-width: 100%;    /* On autorise toute la largeur */
+  margin: 0;          /* On colle aux bords */
+  padding: 0;         /* On enlève le padding */
+  text-align: left;   /* On remet le texte normal */
+  width: 100%;        /* On force la largeur totale */
+
   --bg-dark: #050b0a;
   --bg-gradient: radial-gradient(circle at 50% 0%, #1a2a25 0%, var(--bg-dark) 60%);
   --card-bg: rgba(255, 255, 255, 0.03);
@@ -28,7 +34,7 @@ body {
   font-family: 'Montserrat', sans-serif;
   background: var(--bg-dark) var(--bg-gradient);
   color: var(--text-main);
-  padding: 80px 0 100px 0; 
+  padding:  100px; 
   min-height: 100vh;
 }
 

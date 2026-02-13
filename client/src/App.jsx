@@ -7,6 +7,7 @@ import TrainingPage from './pages/TrainingPage';
 import PrepaPage from './pages/PrepaPage';
 import CompetitionsPage from './pages/CompetitionsPage'; 
 import ProfilePage from './pages/ProfilePage';
+import LandingPage from './pages/LandingPage';
 
 // --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
@@ -48,6 +49,7 @@ function App() {
   const [user, setUser] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false); // Pour AuthModal
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showApp, setShowApp] = useState(false);
 
   // --- ÉTAT DU MODAL DE CONFIRMATION (Logout / Delete) ---
   const [confirmModal, setConfirmModal] = useState({
@@ -66,8 +68,13 @@ function App() {
     const token = localStorage.getItem('token');
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
+      setShowApp(true);
     }
   }, []);
+
+  if (!user && !showApp) {
+    return <LandingPage onEnterApp={() => setShowApp(true)} />;
+  }
 
   // --- LOGIQUE DE DÉCONNEXION ---
   const handleLogout = () => {
