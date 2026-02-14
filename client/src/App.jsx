@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 
 // --- IMPORTS DES PAGES ---
 import HomePage from './pages/HomePage';
@@ -8,6 +8,8 @@ import PrepaPage from './pages/PrepaPage';
 import CompetitionsPage from './pages/CompetitionsPage'; 
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
+import AdminDashboard from './pages/AdminDashboard';
+import CoachSpace from './pages/CoachSpace';
 
 // --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
@@ -15,7 +17,7 @@ import CustomModal from './components/CustomModal';
 import FeedbackWidget from './components/FeedbackWidget';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
 import { LuTrophy } from 'react-icons/lu'; 
-import { FaUser, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
+import { FaUser, FaDumbbell, FaTools, FaLock, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 
 // --- 1. WRAPPER TROPHÉE ---
 const IconTrophy = ({ color = "var(--text-muted)" }) => (
@@ -156,9 +158,51 @@ function App() {
             {/* Menu Déroulant */}
             {isDropdownOpen && user && (
                 <div className="dropdown-menu" onMouseLeave={() => setIsDropdownOpen(false)}>
+                    
+                    {/* 1. MON PROFIL (Pour tout le monde) */}
                     <Link to="/profile" className="dropdown-item" onClick={() => setIsDropdownOpen(false)}>
                         <FaUser /> Mon Profil
                     </Link>
+
+                    {/* 2. ESPACE COACH (Visible uniquement si Coach ou Admin) */}
+                    {(user.role === 'coach' || user.role === 'admin') && (
+                        <Link 
+                            to="/coach-space" 
+                            className="dropdown-item" 
+                            onClick={() => setIsDropdownOpen(false)}
+                            style={{ color: '#3aedcc' }} // Petit vert néon pour différencier
+                        >
+                            <FaDumbbell /> Espace Coach
+                        </Link>
+                    )}
+
+                    {/* 3. GESTION ADMIN (Visible uniquement si Admin) */}
+                    {user.role === 'admin' && (
+                        <Link 
+                            to="/admin" 
+                            className="dropdown-item" 
+                            onClick={() => setIsDropdownOpen(false)}
+                            style={{ color: '#ef4444' }} // Petit rouge pour l'admin
+                        >
+                            <FaTools /> Gestion Admin
+                        </Link>
+                    )}
+
+                    {/* 4. DÉBLOQUER COACH (Visible uniquement si Player) */}
+                    {user.role === 'player' && (
+                        <div 
+                            className="dropdown-item" 
+                            onClick={() => { setIsDropdownOpen(false); handleBecomeCoach(); }}
+                            style={{ opacity: 0.6, fontSize: '0.85rem' }} // Un peu plus discret
+                        >
+                            <FaLock /> Accès Coach
+                        </div>
+                    )}
+
+                    {/* Ligne de séparation (optionnel, tu peux ajouter un <hr /> stylisé si tu veux) */}
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '5px 0' }}></div>
+
+                    {/* 5. DÉCONNEXION */}
                     <div className="dropdown-item danger" onClick={handleLogout}>
                         <FaSignOutAlt /> Déconnexion
                     </div>
@@ -174,6 +218,8 @@ function App() {
           <Route path="/trainings" element={<TrainingPage />} />
           <Route path="/competitions" element={<CompetitionsPage />} />
           <Route path="/profile" element={<ProfilePage setUser={setUser} />} />
+          <Route path="/admin" element={ user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" /> } />
+          <Route path="/coach-space" element={ user && (user.role === 'coach' || user.role === 'admin') ? <CoachSpace /> : <Navigate to="/" /> } />
         </Routes>
       </div>
       <FeedbackWidget userEmail={user?.email} />
