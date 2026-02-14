@@ -236,7 +236,7 @@ export default function HomePage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                   <FaExternalLinkAlt size={12} color="#666" />
+                   <FaExternalLinkAlt size={16} color="#666" style={{ margin: '4px'}}/>
                    <div 
                        onClick={refreshAi}
                        style={{

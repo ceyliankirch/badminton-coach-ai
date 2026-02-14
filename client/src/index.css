@@ -221,6 +221,7 @@ textarea { border-radius: 20px; min-height: 100px; resize: vertical; }
   .feedback-wrapper {
     left: auto;
     right: 30px;
+    bottom: 30px;
     transform: none;
     align-items: flex-end; /* Aligne le contenu sur la droite */
   }
