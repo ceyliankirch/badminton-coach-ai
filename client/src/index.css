@@ -53,14 +53,10 @@ body {
 }
 
 .logo-box {
-  width: 60px; height: 60px;
-  background: var(--primary);
+  width: auto; height: 70px;
   margin-top: 20px;
-  border-radius: 24px;
   padding: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; color: black;
-  box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .logo-box img, .logo-box svg {
@@ -68,6 +64,12 @@ body {
   height: 100%;
   object-fit: contain; /* Garde les proportions sans déformer */
   display: block;
+}
+
+@media (max-width: 768px) {
+  .logo-box {
+    height: 55px;
+  }
 }
 
 /* --- 4. NAVIGATION (Mobile & Desktop) --- */

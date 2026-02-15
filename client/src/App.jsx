@@ -120,7 +120,7 @@ function App() {
       {/* --- TOP BAR --- */}
       <div className="top-bar">
         <Link to="/" className="logo-box">
-          <img src="/assets/bdmcoach_logo.svg" alt="Logo" className="logo" />
+          <img src="/assets/badmin_logo_large.png" alt="Logo" className="logo" />
         </Link>
         
         <div style={{ position: 'relative' }}>
