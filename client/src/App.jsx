@@ -131,7 +131,12 @@ function App() {
                   marginTop: '20px', 
                   display: 'flex', 
                   alignItems: 'center',
-                  padding: '5px 10px' 
+                  padding: '5px 10px', 
+                  display: 'flex',               // Active le mode ligne
+                  justifyContent: 'space-between', // Pousse les éléments aux extrémités
+                  alignItems: 'center',          // Centre verticalement
+                  padding: '10px 20px',          // Ajoute de l'air sur les côtés
+                  boxSizing: 'border-box',       // Empêche le padding de dépasser la largeur
                 }}
             >
                {user ? (

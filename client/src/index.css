@@ -45,7 +45,7 @@ body {
   top: 0; left: 0; right: 0;
   height: 70px;
   padding: 0 20px;
-  background: linear-gradient(to bottom, var(--bg-dark), transparent);
+  /*background: linear-gradient(to bottom, var(--bg-dark), transparent);*/
   z-index: 1000;
   display: flex;
   align-items: center;
