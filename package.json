@@ -12,5 +12,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "node index.js"
+  },
+  "devDependencies": {
+    "vite-plugin-pwa": "^1.2.0"
   }
 }

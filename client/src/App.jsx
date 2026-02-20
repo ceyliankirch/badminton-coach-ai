@@ -14,6 +14,7 @@ import CoachSpace from './pages/CoachSpace';
 // --- IMPORTS DES COMPOSANTS ---
 import AuthModal from './components/AuthModal';
 import CustomModal from './components/CustomModal';
+import InstallModal from './components/InstallModal';
 import FeedbackWidget from './components/FeedbackWidget';
 import { IconHome, IconDumbbell, IconJournal } from './components/Icons';
 import { LuTrophy } from 'react-icons/lu'; 
@@ -117,6 +118,9 @@ function App() {
       {/* Modal d'Authentification */}
       <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} setUser={setUser} />
 
+      {/* Modale d'installation PWA */}
+      <InstallModal />
+
       {/* --- TOP BAR --- */}
       <div className="top-bar">
         <Link to="/" className="logo-box">
@@ -194,17 +198,19 @@ function App() {
                     {user.role === 'player' && (
                         <div 
                             className="dropdown-item" 
-                            onClick={() => { setIsDropdownOpen(false); handleBecomeCoach(); }}
-                            style={{ opacity: 0.6, fontSize: '0.85rem' }} // Un peu plus discret
+                            onClick={() => { setIsDropdownOpen(false); /* handleBecomeCoach() n'est pas défini dans ce fichier mais tu avais ça */ }}
+                            style={{ opacity: 0.6, fontSize: '0.85rem' }} 
                         >
                             <FaLock /> Accès Coach
                         </div>
                     )}
 
-                    {/* Ligne de séparation (optionnel, tu peux ajouter un <hr /> stylisé si tu veux) */}
                     <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '5px 0' }}></div>
 
-                    {/* 5. DÉCONNEXION */}
+
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '5px 0' }}></div>
+
+                    {/* 6. DÉCONNEXION */}
                     <div className="dropdown-item danger" onClick={handleLogout}>
                         <FaSignOutAlt /> Déconnexion
                     </div>
