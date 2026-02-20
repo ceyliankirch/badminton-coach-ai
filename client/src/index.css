@@ -44,7 +44,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 1%;
+  padding: 5px 5%;
   position: relative;
   z-index: 10;
 }
@@ -64,6 +64,9 @@ body {
 @media (max-width: 768px) {
   .logo-box {
     height: 40px;
+    /* Sur mobile, pousser le logo vers la gauche */
+    margin-right: auto;
+    margin-left: 8px;
   }
 }
 
