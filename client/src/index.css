@@ -40,6 +40,7 @@ body {
 
 /* --- 3. LAYOUT (Top Bar & Content) --- */
 .top-bar {
+  position: fixed;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -136,7 +137,6 @@ body {
 
 /* Desktop Sidebar specifics */
 @media (min-width: 769px) {
-  body { padding-left: 120px; padding-bottom: 40px; }
   .bottom-nav {
     left: 20px; top: 50%; transform: translateY(-50%);
     bottom: auto; width: 75px; height: auto;
