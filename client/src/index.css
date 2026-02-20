@@ -34,29 +34,24 @@ body {
   font-family: 'Montserrat', sans-serif;
   background: var(--bg-dark) var(--bg-gradient);
   color: var(--text-main);
-  padding-top:  100px; 
   padding-bottom: 70px;
   min-height: 100vh;
 }
 
 /* --- 3. LAYOUT (Top Bar & Content) --- */
 .top-bar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 70px;
-  padding: 0 4vw;
-  background: linear-gradient(to bottom, var(--bg-dark), transparent);
-  z-index: 1000;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  padding: 5px 4%;
+  position: relative;
+  z-index: 10;
 }
 
 .logo-box {
   width: auto; height: 70px;
   margin-top: 20px;
   padding: 9px;
-  display: flex;
 }
 
 .logo-box img, .logo-box svg {
