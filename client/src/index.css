@@ -50,20 +50,25 @@ body {
 }
 
 .logo-box {
-  width: auto; height: 50px;
+  height: 70px;
   margin-top: 20px;
+  padding: 9px 9px 9px 0; /* On garde 0 à gauche pour bien coller */
+  /* Safari préfère un flex ici pour bien gérer l'enfant */
+  display: flex; 
+  align-items: center;
 }
 
 .logo-box img, .logo-box svg {
-  width: 100%;
   height: 100%;
-  object-fit: contain; /* Garde les proportions sans déformer */
+  width: auto; /* <-- LE SECRET EST ICI : 'auto' au lieu de '100%' */
+  max-width: 100%; /* Sécurité supplémentaire */
+  object-fit: contain;
   display: block;
 }
 
 @media (max-width: 768px) {
   .logo-box {
-    height: 40px;
+    height: 50px;
     /* Sur mobile, pousser le logo vers la gauche */
     margin-right: auto;
     margin-left: 8px;
