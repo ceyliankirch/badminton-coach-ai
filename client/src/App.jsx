@@ -136,7 +136,7 @@ function App() {
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center', 
-                  padding: '10px 20px', 
+                  /*padding: '10px 20px', */
                   boxSizing: 'border-box'
                 }}
             >

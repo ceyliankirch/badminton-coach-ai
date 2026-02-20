@@ -60,7 +60,7 @@ export default function InstallModal() {
     }}>
       <div style={{
         background: '#1a1a1a',
-        border: '1px solid rgba(204, 255, 0, 0.3)',
+        border: '1px solid rgba(0, 255, 157, 0.3)',
         borderRadius: '24px',
         padding: '30px',
         maxWidth: '400px',
@@ -85,7 +85,7 @@ export default function InstallModal() {
         {/* Icône */}
         <div style={{
           width: '70px', height: '70px', margin: '0 auto 20px',
-          background: 'rgba(204, 255, 0, 0.1)', borderRadius: '50%',
+          background: 'rgba(0, 255, 157, 0.1)', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'var(--primary-color)', border: '2px solid rgba(0, 255, 187, 0.3)'
         }}>
@@ -106,7 +106,7 @@ export default function InstallModal() {
             onClick={handleDismiss}
             style={{
               flex: 1, padding: '14px', borderRadius: '9999px',
-              background: 'rgba(255,255,255,0.05)', color: 'white',
+              background: 'rgba(0, 255, 179, 0.05)', color: 'white',
               border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
               fontWeight: 'bold', fontSize: '0.95rem'
             }}
@@ -117,10 +117,10 @@ export default function InstallModal() {
             onClick={handleInstall}
             style={{
               flex: 1, padding: '14px', borderRadius: '9999px',
-              background: '#ccff00', color: 'black',
+              background: 'rgb(0, 255, 179)', color: 'black',
               border: 'none', cursor: 'pointer',
               fontWeight: 'bold', fontSize: '0.95rem',
-              boxShadow: '0 4px 15px rgba(204, 255, 0, 0.3)'
+              boxShadow: '0 4px 15px rgba(0, 255, 162, 0.3)'
             }}
           >
             Installer
