@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5000",
+  "http://127.0.0.1:5173",
   "https://badminton-coach-client.onrender.com", 
   "https://badminton-coach-ai.onrender.com"
 ];
@@ -277,14 +278,29 @@ app.post('/api/prepa', auth, async (req, res) => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [
-        { role: "system", content: `Tu es un préparateur physique expert badminton. JSON: { "warmup": [], "main": [], "cooldown": [] }. Français.` },
+        { 
+          role: "system", 
+          content: `Tu es un préparateur physique expert badminton. Tu dois répondre STRICTEMENT et UNIQUEMENT au format JSON. Voici la structure exacte attendue : { "warmup": ["échauffement 1", "échauffement 2"], "main": ["exercice 1", "exercice 2"], "cooldown": ["étirement 1"] }. Tout doit être en Français.` 
+        },
         { role: "user", content: `Objectif : "${focus}".` }
       ],
       model: "llama-3.3-70b-versatile",
       response_format: { type: "json_object" } 
     });
-    res.json(JSON.parse(completion.choices[0].message.content));
-  } catch (error) { res.status(500).json({ message: "Erreur génération." }); }
+    
+    // On extrait le texte de la réponse
+    const responseText = completion.choices[0].message.content;
+    
+    // On le parse et on l'envoie au frontend
+    res.json(JSON.parse(responseText));
+
+  } catch (error) { 
+    // 👇 VOILÀ LE DÉTECTEUR DE MENSONGES :
+    console.error("🚨 CRASH API GROQ/LLAMA :", error.message || error);
+    if (error.error) console.error("Détails Groq :", error.error);
+    
+    res.status(500).json({ message: "Erreur génération." }); 
+  }
 });
 
 app.post('/api/prepa/save', auth, async (req, res) => {

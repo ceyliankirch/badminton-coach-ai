@@ -241,6 +241,37 @@ const verifyRolePassword = async () => {
         </span>
       </div>
 
+      {/* GALERIE DICEBEAR */}
+      <div className="card" style={{ background: '#1a1a1a48', padding: '25px', borderRadius: '20px', marginBottom: '20px' }}>
+        <h3 style={{ color: 'var(--primary)', marginTop: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FaUserEdit /> Galerie d'Avatars
+        </h3>
+
+        {avatarList.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}><FaSpinner className="spin" /></div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '12px' }}>
+            {avatarList.map((uri, idx) => (
+              <div 
+                key={idx}
+                onClick={() => selectAvatar(uri)}
+                style={{
+                  position: 'relative', cursor: 'pointer', borderRadius: '15px',
+                  border: userData.avatar === uri ? '3px solid var(--primary)' : '2px solid transparent',
+                  background: 'rgba(255,255,255,0.02)', padding: '5px', transition: 'all 0.2s',
+                  transform: userData.avatar === uri ? 'scale(1.05)' : 'scale(1)'
+                }}
+              >
+                <img src={uri} alt="Option" style={{ width: '100%', borderRadius: '10px' }} />
+                {userData.avatar === uri && (
+                  <FaCheckCircle style={{ position: 'absolute', top: '-5px', right: '-5px', color: 'var(--primary)', background: '#1a1a1a', borderRadius: '50%' }} />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* FORMULAIRE INFOS */}
       <div className="card" style={{ background: 'rgba(26, 26, 26, 0.2)', padding: '25px', borderRadius: '20px' }}>
         <h3 style={{ color: 'white', marginTop: 0 }}>Paramètres Compte</h3>

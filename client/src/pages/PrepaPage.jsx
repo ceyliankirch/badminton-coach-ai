@@ -48,21 +48,21 @@ export default function PrepaPage() {
     const token = localStorage.getItem('token'); 
     try {
       const config = token ? { headers: { 'x-auth-token': token } } : {};
-      // MODIFICATION ICI
       const res = await axios.post(`${API_URL}/api/prepa`, { focus }, config);
       setProgram(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("🚨 ERREUR API LLAMA :", err.response ? err.response.data : err.message);
+      console.error(err); 
       setModal({
         isOpen: true,
         title: 'Erreur',
         message: 'Impossible de générer le programme. Vérifie ta connexion.',
-        type: 'info'
+        type: 'danger' 
       });
     }
     setLoading(false);
   };
-
+  
   const handleSave = async () => {
     const token = localStorage.getItem('token');
     if (!token) {

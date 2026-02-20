@@ -44,8 +44,8 @@ body {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 70px;
-  padding: 0 20px;
-  /*background: linear-gradient(to bottom, var(--bg-dark), transparent);*/
+  padding: 0 2vw;
+  background: linear-gradient(to bottom, var(--bg-dark), transparent);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -68,7 +68,7 @@ body {
 
 @media (max-width: 768px) {
   .logo-box {
-    height: 55px;
+    height: 60px;
   }
 }
 

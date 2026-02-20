@@ -127,16 +127,13 @@ function App() {
             <div 
                 onClick={() => user ? setIsDropdownOpen(!isDropdownOpen) : setIsModalOpen(true)} 
                 style={{ 
-                  cursor: 'pointer',
+                  cursor: 'pointer', 
                   marginTop: '20px', 
                   display: 'flex', 
-                  alignItems: 'center',
-                  padding: '5px 10px', 
-                  display: 'flex',               // Active le mode ligne
-                  justifyContent: 'space-between', // Pousse les éléments aux extrémités
-                  alignItems: 'center',          // Centre verticalement
-                  padding: '10px 20px',          // Ajoute de l'air sur les côtés
-                  boxSizing: 'border-box',       // Empêche le padding de dépasser la largeur
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  padding: '10px 20px', 
+                  boxSizing: 'border-box'
                 }}
             >
                {user ? (
@@ -187,7 +184,7 @@ function App() {
                             to="/admin" 
                             className="dropdown-item" 
                             onClick={() => setIsDropdownOpen(false)}
-                            style={{ color: '#ef4444' }} // Petit rouge pour l'admin
+                            style={{ color: '#ef8044' }} // Petit rouge pour l'admin
                         >
                             <FaTools /> Gestion Admin
                         </Link>
