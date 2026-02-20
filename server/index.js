@@ -280,7 +280,7 @@ app.post('/api/prepa', auth, async (req, res) => {
       messages: [
         { 
           role: "system", 
-          content: `Tu es un préparateur physique expert badminton. Tu dois répondre STRICTEMENT et UNIQUEMENT au format JSON. Voici la structure exacte attendue : { "warmup": ["échauffement 1", "échauffement 2"], "main": ["exercice 1", "exercice 2"], "cooldown": ["étirement 1"] }. Tout doit être en Français.` 
+          content: `Tu es un préparateur physique expert badminton. Enoncer d'abord le nombre de série et de répétitions pour chaque exercice. Tu dois répondre STRICTEMENT et UNIQUEMENT au format JSON. Voici la structure exacte attendue : { "warmup": ["échauffement 1", "échauffement 2"], "main": ["exercice 1", "exercice 2", "exercice 3", "exercice 4"], "cooldown": ["étirement 1", "étirement 2"] }. Tout doit être en Français.` 
         },
         { role: "user", content: `Objectif : "${focus}".` }
       ],
@@ -335,21 +335,70 @@ app.get('/api/competitions', auth, async (req, res) => {
   catch (error) { res.status(500).json({ error: "Erreur" }); }
 });
 
+// --- COMPÉTITIONS ---
 app.post('/api/competitions', auth, async (req, res) => {
   try {
     const { category, tableau, result, scores, description, videoUrl } = req.body;
-    let feedback = "";
+
+    // 1. Demande d'analyse à l'IA (Groq / Llama)
+    let aiFeedback = "";
     try {
-        const completion = await groq.chat.completions.create({
-            messages: [{ role: "system", content: "Coach de badminton analytique." }, { role: "user", content: `Match: ${category} ${tableau}. Score: ${JSON.stringify(scores)}. Ressenti: "${description}".` }],
-            model: "llama-3.3-70b-versatile",
-        });
-        feedback = completion.choices[0].message.content;
-    } catch (e) {}
-    const newComp = new Competition({ userId: req.user.id, category, tableau, result, scores, description, videoUrl, aiFeedback: feedback });
-    await newComp.save();
-    res.json(newComp);
-  } catch (error) { res.status(500).json({ error: "Erreur" }); }
+      const completion = await groq.chat.completions.create({
+        messages: [
+          { 
+            role: "system", 
+            content: `Tu es un coach de badminton expert. Analyse ce match et réponds STRICTEMENT au format JSON avec ces 3 clés exactes : 
+            {
+              "resume": "Bref résumé de la physionomie du match",
+              "tactique": "Propose une stratégie en fonction de l'analyse du joueur et du résultat",
+              "conclusion": "Mot de la fin motivant et axes d'amélioration"
+            }.
+            Tout doit être en Français, sois concis, direct et encourageant.` 
+          },
+          { 
+            role: "user", 
+            content: `Catégorie: ${category}, Tableau: ${tableau}, Résultat: ${result}. 
+            Scores: Set 1 (${scores.set1.me}-${scores.set1.opp}), Set 2 (${scores.set2.me}-${scores.set2.opp}), Set 3 (${scores.set3.me}-${scores.set3.opp}). 
+            Ressenti du joueur : "${description}"` 
+          }
+        ],
+        model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" } 
+      });
+
+      // On récupère le texte JSON renvoyé par l'IA
+      aiFeedback = completion.choices[0].message.content;
+      
+    } catch (aiError) {
+      console.error("🚨 ERREUR IA COMPÉTITIONS :", aiError.message);
+      // Sécurité : si l'IA plante, on met un message par défaut pour ne pas bloquer l'enregistrement
+      aiFeedback = JSON.stringify({
+        resume: "Analyse indisponible pour le moment.",
+        tactique: "L'IA a eu un petit coup de fatigue.",
+        conclusion: "Continue de tout donner sur le terrain !"
+      });
+    }
+
+    // 2. Sauvegarde du match dans la base de données avec l'analyse IA
+    // ATTENTION : Remplace "Competition" par le nom exact de ton modèle Mongoose si différent (ex: Match)
+    const newMatch = new Competition({ 
+      userId: req.user.id,
+      category,
+      tableau,
+      result,
+      scores,
+      description,
+      videoUrl,
+      aiFeedback // 👈 L'analyse 3 blocs est enregistrée ici
+    });
+
+    const savedMatch = await newMatch.save();
+    res.json(savedMatch);
+
+  } catch (err) {
+    console.error("Erreur serveur :", err);
+    res.status(500).json({ message: "Erreur lors de la sauvegarde du match" });
+  }
 });
 
 app.delete('/api/competitions/:id', auth, async (req, res) => {

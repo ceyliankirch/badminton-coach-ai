@@ -230,7 +230,7 @@ const fetchTrainings = async () => {
             {training.aiFeedback && (
               <div style={{ background: 'var(--journal-bg)', padding: '15px', borderRadius: '10px', borderLeft: '4px solid var(--journal-color)' }}>
                 <strong style={{ color: 'var(--journal-color)', display: 'block', marginBottom: '5px' }}>Coach IA :</strong>
-                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.95rem' }}>{training.aiFeedback}</p>
+                <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.95rem' }}>{training.aiFeedback}</p>
               </div>
             )}
           </div>

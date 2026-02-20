@@ -120,7 +120,6 @@ const CompetitionsPage = () => {
     if (!token) return;
 
     try {
-      // MODIFICATION ICI
       const res = await axios.get(`${API_URL}/api/competitions`, {
         headers: { 'x-auth-token': token }
       });
@@ -155,7 +154,6 @@ const CompetitionsPage = () => {
     }
 
     try {
-      // MODIFICATION ICI
       await axios.post(`${API_URL}/api/competitions`, formData, {
         headers: { 'x-auth-token': token }
       });
@@ -189,7 +187,6 @@ const CompetitionsPage = () => {
         onConfirm: async () => {
             const token = localStorage.getItem('token');
             try {
-              // MODIFICATION ICI
               await axios.delete(`${API_URL}/api/competitions/${id}`, {
                 headers: { 'x-auth-token': token }
               });
@@ -287,7 +284,6 @@ const CompetitionsPage = () => {
           </div>
         </div>
 
-        {/* NOUVEAU MENU DÉROULANT AU LIEU DU <select> NATIF */}
         <div style={{ marginBottom: '20px' }}>
           <CustomSelect 
             name="tableau" 
@@ -401,12 +397,52 @@ const CompetitionsPage = () => {
                     </p>
                 )}
                 
+                {/* --- ANALYSE IA (NOUVEAU FORMAT 3 BLOCS) --- */}
                 {match.aiFeedback && (
-                  <div style={{ background: 'rgba(204, 255, 0, 0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(204, 255, 0, 0.2)', marginBottom: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccff00', fontWeight: 'bold', marginBottom: '5px', fontSize: '0.9rem' }}>
-                      <FaRobot /> Coach IA
+                  <div style={{ marginTop: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ccff00', fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '15px' }}>
+                      <FaRobot /> Analyse du Coach IA
                     </div>
-                    <p style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#eee', margin: 0 }}>{match.aiFeedback}</p>
+
+                    {(() => {
+                      // On essaie de lire le feedback comme du JSON (nouveau format)
+                      let aiData;
+                      try {
+                        aiData = typeof match.aiFeedback === 'string' ? JSON.parse(match.aiFeedback) : match.aiFeedback;
+                      } catch (e) {
+                        aiData = null; // C'est un ancien texte classique
+                      }
+
+                      // SI C'EST LE NOUVEAU FORMAT (3 blocs)
+                      if (aiData && aiData.resume && aiData.tactique && aiData.conclusion) {
+                        return (
+                          <div style={{ display: 'grid', gap: '15px' }}>
+                            {/* Résumé */}
+                            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '12px', borderLeft: '4px solid #3b82f6' }}>
+                              <h4 style={{ color: '#3b82f6', margin: '0 0 8px 0', fontSize: '0.95rem' }}>📝 Résumé</h4>
+                              <p style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>{aiData.resume}</p>
+                            </div>
+                            {/* Tactique */}
+                            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '12px', borderLeft: '4px solid #ccff00' }}>
+                              <h4 style={{ color: '#ccff00', margin: '0 0 8px 0', fontSize: '0.95rem' }}>🎯 La Tactique</h4>
+                              <p style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>{aiData.tactique}</p>
+                            </div>
+                            {/* Conclusion */}
+                            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '12px', borderLeft: '4px solid #10b981' }}>
+                              <h4 style={{ color: '#10b981', margin: '0 0 8px 0', fontSize: '0.95rem' }}>🚀 Conclusion & Améliorations</h4>
+                              <p style={{ color: '#ccc', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>{aiData.conclusion}</p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // SI C'EST L'ANCIEN FORMAT (Texte simple)
+                      return (
+                        <div style={{ background: 'rgba(204, 255, 0, 0.05)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(204, 255, 0, 0.2)' }}>
+                          <p style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#eee', margin: 0 }}>{match.aiFeedback}</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 
