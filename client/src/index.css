@@ -49,9 +49,8 @@ body {
 }
 
 .logo-box {
-  width: auto; height: 70px;
+  width: auto; height: 50px;
   margin-top: 20px;
-  padding: 9px;
 }
 
 .logo-box img, .logo-box svg {
@@ -63,7 +62,7 @@ body {
 
 @media (max-width: 768px) {
   .logo-box {
-    height: 60px;
+    height: 40px;
   }
 }
 
