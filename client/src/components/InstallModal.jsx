@@ -5,24 +5,21 @@ export default function InstallModal() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      
-      // On vérifie si l'utilisateur n'a pas déjà refusé récemment
-      const hasDismissed = localStorage.getItem('badmin_pwa_dismissed');
-      
-      if (!hasDismissed) {
-        // Petite pause de 2 secondes avant d'afficher la popup pour une meilleure expérience
-        setTimeout(() => setShowModal(true), 2000);
-      }
-    };
+useEffect(() => {
+  const handleBeforeInstallPrompt = (e) => {
+    console.log("🔥 L'événement a été capturé !");
+    e.preventDefault();
+    setDeferredPrompt(e);
+    
+    // On force l'affichage pour voir si ça marche
+    setShowModal(true); 
+  };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  
+  // Test manuel : tape localStorage.clear() dans ta console si tu l'as déjà fermé une fois
+  return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+}, []);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
