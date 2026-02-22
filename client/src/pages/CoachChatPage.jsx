@@ -88,45 +88,11 @@ export default function CoachChatPage() {
 
             <div className="chat-app-container">
                 
-                {/* 1. HEADER PREMIUM */}
-                <div style={{ 
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '15px 20px', 
-                    background: 'rgb(0, 30, 24)',
-                    backdropFilter: 'blur(10px)', /* Effet flou iOS */
-                    WebkitBackdropFilter: 'blur(10px)',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
-                    zIndex: 10
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <Link to="/" style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
-                            <FaArrowLeft size={20} />
-                        </Link>
-                        
-                        {/* Avatar Coach */}
-                        <div style={{ position: 'relative' }}>
-                            <div style={{ 
-                                width: '40px', height: '40px', borderRadius: '50%', 
-                                background: 'linear-gradient(135deg, var(--primary) 0%, #00d2ff 100%)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: '0 0 10px rgba(0, 255, 140, 0.3)'
-                            }}>
-                                <FaRobot size={22} color="black" />
-                            </div>
-                            <FaCircle size={10} color="#10B981" style={{ position: 'absolute', bottom: 0, right: 0, border: '2px solid var(--bg-dark)', borderRadius: '50%' }} />
-                        </div>
-
-                        <div>
-                            <h1 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 'bold', color: 'white' }}>Coach Badmin</h1>
-                            <span style={{ fontSize: '0.75rem', color: '#10B981', fontWeight: '600' }}>Toujours là pour toi</span>
-                        </div>
-                    </div>
-                </div>
 
                 {/* 2. ZONE DE MESSAGES */}
                 <div className="chat-scroll-area" style={{ 
                     flex: 1, overflowY: 'auto', padding: '20px', 
-                    display: 'flex', flexDirection: 'column', gap: '12px' 
+                    display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '80px' /* Un peu d'air en haut pour le design */
                 }}>
                     {/* Date du jour (Simulée pour le design) */}
                     <div style={{ textAlign: 'center', margin: '10px 0' }}>
@@ -196,7 +162,7 @@ export default function CoachChatPage() {
                         alignItems: 'center',
                         padding: '4px 4px 4px 15px'
                     }}>
-                        <textarea 
+                        <input type="text"
                             value={input} 
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -210,7 +176,7 @@ export default function CoachChatPage() {
                             style={{ 
                                 flex: 1, background: 'transparent', border: 'none',
                                 color: 'white', outline: 'none', resize: 'none',
-                                maxHeight: '100px', fontSize: '0.95rem',
+                                maxHeight: '50px', fontSize: '0.95rem',
                                 padding: '8px 0', fontFamily: 'inherit'
                             }}
                         />

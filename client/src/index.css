@@ -36,6 +36,10 @@ body {
   color: var(--text-main);
   padding-bottom: 70px;
   min-height: 100vh;
+  overscroll-behavior-y: none; 
+  background-color: var(--bg-dark, #050b0a); /* Remplace par ta variable de fond exact */
+  margin: 0;
+  padding: 0;
 }
 
 /* --- 3. LAYOUT (Top Bar & Content) --- */
