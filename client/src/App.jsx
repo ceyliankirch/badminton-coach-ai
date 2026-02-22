@@ -9,6 +9,7 @@ import CompetitionsPage from './pages/CompetitionsPage';
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
+import CoachChatPage from './pages/CoachChatPage';
 import CoachSpace from './pages/CoachSpace';
 
 // --- IMPORTS DES COMPOSANTS ---
@@ -222,6 +223,7 @@ function App() {
           <Route path="/prepa" element={<PrepaPage />} />
           <Route path="/trainings" element={<TrainingPage />} />
           <Route path="/competitions" element={<CompetitionsPage />} />
+          <Route path="/coach-chat" element={<CoachChatPage />} />
           <Route path="/profile" element={<ProfilePage setUser={setUser} />} />
           <Route path="/admin" element={ user && user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" /> } />
           <Route path="/coach-space" element={ user && (user.role === 'coach' || user.role === 'admin') ? <CoachSpace /> : <Navigate to="/" /> } />

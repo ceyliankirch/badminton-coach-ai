@@ -411,6 +411,47 @@ app.delete('/api/competitions/:id', auth, async (req, res) => {
   } catch (err) { res.status(500).send('Erreur serveur'); }
 });
 
+app.post('/api/chat', auth, async (req, res) => {
+    try {
+        const { message } = req.body;
+
+        // 1. Récupérer les données avec LE BON NOM DE MODÈLE (PhysicalProgram)
+        const [trainings, prepas, competitions] = await Promise.all([
+            Training.find({ userId: req.user.id }).limit(10).sort({ date: -1 }),
+            PhysicalProgram.find({ userId: req.user.id }).limit(5).sort({ date: -1 }), /* 👈 MODIFIÉ ICI */
+            Competition.find({ userId: req.user.id }).limit(5).sort({ date: -1 })
+        ]);
+
+        // 2. Préparer le contexte pour Llama
+        const statsContext = `
+            Voici les données récentes du joueur :
+            - Entraînements (10 derniers) : ${trainings.map(t => t.theme + " (Note: " + t.rating + "/10)").join(', ')}
+            - Prépa physique (5 dernières) : ${prepas.map(p => p.type || p.name || 'Séance').join(', ')}
+            - Compétitions (5 dernières) : ${competitions.map(c => c.result + " en " + c.tableau).join(', ')}
+        `;
+
+        // 3. Appel à Groq
+        const completion = await groq.chat.completions.create({
+            messages: [
+                { 
+                    role: "system", 
+                    content: `Tu es un coach de badminton expert. Tu as accès aux données réelles du joueur. 
+                    Utilise ces données pour donner des conseils ultra-personnalisés. 
+                    Si le joueur te pose une question générale, réponds avec expertise. 
+                    Si le joueur te demande où il en est, analyse le contexte suivant : ${statsContext}` 
+                },
+                { role: "user", content: message }
+            ],
+            model: "llama-3.3-70b-versatile",
+        });
+
+        res.json({ reply: completion.choices[0].message.content });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erreur lors de la discussion avec le coach." });
+    }
+});
+
 // --- USER & PROFILE ---
 app.post('/api/user/update-avatar', auth, async (req, res) => {
   try {

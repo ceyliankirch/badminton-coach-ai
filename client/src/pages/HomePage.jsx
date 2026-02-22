@@ -321,21 +321,21 @@ export default function HomePage() {
           </div>
         </Link>
 
-        {/* 5. STATS (NOUVELLE CARTE) */}
-        <div style={{ ...gridCardStyle, cursor: 'default' }}
-             onMouseEnter={e => e.currentTarget.style.borderColor = '#a855f7'}
-             onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}>
+        {/* 5. MON COACH IA (Anciennement STATS) */}
+        <Link to="/coach-chat" style={{ ...gridCardStyle, textDecoration: 'none' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '8px', borderRadius: '8px', color: '#a855f7' }}>
-               <FaChartLine size={20} />
+            <div style={{ background: 'rgba(0, 255, 157, 0.1)', padding: '8px', borderRadius: '8px', color: 'var(--primary)' }}>
+                <FaRobot size={20} />
             </div>
-            <span style={{ fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>Bientôt</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>EN LIGNE</span>
           </div>
           <div>
-            <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Statistiques</h3>
-            <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '0.75rem', fontStyle: 'italic' }}>Fonctionnalité à venir</p>
+            <h3 style={{ margin: 0, color: 'white', fontSize: '1rem' }}>Mon Coach</h3>
+            <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: '0.75rem' }}>Pose tes questions à l'IA</p>
           </div>
-        </div>
+        </Link>
 
       </div>
 
