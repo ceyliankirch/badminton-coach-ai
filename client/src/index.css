@@ -40,6 +40,7 @@ body {
   background-color: var(--bg-dark, #050b0a); /* Remplace par ta variable de fond exact */
   margin: 0;
   padding: 0;
+  padding-bottom: 10vh;
 }
 
 /* --- 3. LAYOUT (Top Bar & Content) --- */

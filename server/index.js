@@ -452,6 +452,42 @@ app.post('/api/chat', auth, async (req, res) => {
     }
 });
 
+// 🪄 GÉNÉRER une séance avec l'IA (Llama / Groq)
+app.post('/api/coach/generate', auth, async (req, res) => {
+    try {
+        const { theme, group, playerCount } = req.body;
+
+        const prompt = `Tu es un entraîneur de badminton expert. Crée une séance d'entraînement détaillée.
+        Thème de la séance : ${theme || 'Général'}
+        Public ciblé : ${group || 'Joueurs de club'}
+        Nombre de joueurs : ${playerCount || 'Variable'}
+        
+        Tu DOIS répondre UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après. 
+        Le JSON doit avoir cette structure stricte :
+        {
+            "title": "Nom accrocheur pour la séance",
+            "warmup": [ { "name": "Nom de l'exo", "duration": 10, "description": "Consignes...", "variants": "Adaptations..." } ],
+            "routines": [ { "name": "Nom", "duration": 15, "description": "Consignes...", "variants": "..." } ],
+            "matchSituations": [ { "name": "Nom", "duration": 20, "description": "Consignes...", "variants": "..." } ]
+        }`;
+
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama-3.3-70b-versatile",
+            // Cette option force Llama à renvoyer du JSON pur !
+            response_format: { type: "json_object" } 
+        });
+
+        const generatedSession = JSON.parse(completion.choices[0].message.content);
+        res.json(generatedSession);
+
+    } catch (err) {
+        console.error("Erreur Génération IA:", err);
+        res.status(500).json({ message: "Le coach IA est fatigué, réessaie !" });
+    }
+});
+
+
 // --- USER & PROFILE ---
 app.post('/api/user/update-avatar', auth, async (req, res) => {
   try {
