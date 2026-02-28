@@ -21,7 +21,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "https://badminton-coach-client.onrender.com", 
   "https://badminton-coach-ai.onrender.com",
-  "https://www.badmin.ceyliankirch.fr"
+  "https://badmin.ceyliankirch.fr" // 👈 AJOUTE TON NOUVEAU SOUS-DOMAINE ICI
 ];
 
 app.use(cors({
