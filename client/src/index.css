@@ -304,22 +304,17 @@ textarea { border-radius: 20px; min-height: 100px; resize: vertical; }
 }
 
 
-/* Bloquer le scroll du document entier */
 html, body {
-  position: fixed; /* 👈 Crucial sur iOS pour empêcher le glissement du fond */
-  overflow: hidden;
+  margin: 0;
+  padding: 0;
   width: 100%;
-  height: 100%;
-  /* Désactive les gestes par défaut de Safari */
-  touch-action: none; 
-  -webkit-overflow-scrolling: auto; 
+  height: 100dvh; /* Hauteur dynamique pour iOS */
+  overflow: hidden; /* Empêche la page entière de bouger */
+  background-color: var(--bg-dark);
 }
 
-/* Réautoriser le scroll UNIQUEMENT dans ta zone de messages */
-.chat-scroll-area {
-  flex: 1;
-  overflow-y: auto !important;
-  touch-action: pan-y; /* Autorise le scroll vertical uniquement ici */
-  -webkit-overflow-scrolling: touch; /* Garde la fluidité iOS */
-  overscroll-behavior-y: contain; /* Empêche la propagation au body */
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
