@@ -124,6 +124,8 @@ const CompetitionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, default: Date.now },
   category: { type: String, required: true },
+  eventName: { type: String }, // NOUVEAU: Nom du tournoi / Rencontre
+  stage: { type: String },     // NOUVEAU: Stade (Poule, Finale...)
   tableau: { type: String, required: true },
   result: { type: String, required: true },
   scores: {
@@ -136,7 +138,6 @@ const CompetitionSchema = new mongoose.Schema({
   aiFeedback: String
 });
 const Competition = mongoose.model('Competition', CompetitionSchema);
-
 
 // ==========================================
 // 3. MIDDLEWARE D'AUTHENTIFICATION
@@ -339,9 +340,9 @@ app.get('/api/competitions', auth, async (req, res) => {
 // --- COMPÉTITIONS ---
 app.post('/api/competitions', auth, async (req, res) => {
   try {
-    const { category, tableau, result, scores, description, videoUrl } = req.body;
+    // 👇 1. ON AJOUTE eventName ET stage ICI
+    const { category, eventName, stage, tableau, result, scores, description, videoUrl } = req.body;
 
-    // 1. Demande d'analyse à l'IA (Groq / Llama)
     let aiFeedback = "";
     try {
       const completion = await groq.chat.completions.create({
@@ -367,12 +368,10 @@ app.post('/api/competitions', auth, async (req, res) => {
         response_format: { type: "json_object" } 
       });
 
-      // On récupère le texte JSON renvoyé par l'IA
       aiFeedback = completion.choices[0].message.content;
       
     } catch (aiError) {
       console.error("🚨 ERREUR IA COMPÉTITIONS :", aiError.message);
-      // Sécurité : si l'IA plante, on met un message par défaut pour ne pas bloquer l'enregistrement
       aiFeedback = JSON.stringify({
         resume: "Analyse indisponible pour le moment.",
         tactique: "L'IA a eu un petit coup de fatigue.",
@@ -380,17 +379,18 @@ app.post('/api/competitions', auth, async (req, res) => {
       });
     }
 
-    // 2. Sauvegarde du match dans la base de données avec l'analyse IA
-    // ATTENTION : Remplace "Competition" par le nom exact de ton modèle Mongoose si différent (ex: Match)
+    // 👇 2. ON LES AJOUTE LORS DE LA CRÉATION DU MATCH
     const newMatch = new Competition({ 
       userId: req.user.id,
       category,
+      eventName, // 👈 AJOUTÉ
+      stage,     // 👈 AJOUTÉ
       tableau,
       result,
       scores,
       description,
       videoUrl,
-      aiFeedback // 👈 L'analyse 3 blocs est enregistrée ici
+      aiFeedback
     });
 
     const savedMatch = await newMatch.save();
@@ -410,6 +410,29 @@ app.delete('/api/competitions/:id', auth, async (req, res) => {
     await comp.deleteOne();
     res.json({ msg: 'Match supprimé avec succès' });
   } catch (err) { res.status(500).send('Erreur serveur'); }
+});
+
+// ✏️ MODIFIER un match de compétition
+app.put('/api/competitions/:id', auth, async (req, res) => {
+  try {
+    const { category, eventName, stage, tableau, result, scores, description, videoUrl } = req.body;
+    
+    // On ne régénère PAS le feedback IA lors d'une simple modif de score/texte
+    // Si tu veux régénérer l'IA à chaque modif, il faudrait copier/coller l'appel à Groq ici.
+    
+    const updatedMatch = await Competition.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id }, // Sécurité: seul le proprio peut modifier
+      { $set: { category, eventName, stage, tableau, result, scores, description, videoUrl } },
+      { new: true } // Renvoie le match modifié
+    );
+
+    if (!updatedMatch) return res.status(404).json({ msg: 'Match non trouvé' });
+    res.json(updatedMatch);
+
+  } catch (err) {
+    console.error("Erreur modif compétition:", err);
+    res.status(500).json({ message: "Erreur lors de la modification du match." });
+  }
 });
 
 app.post('/api/chat', auth, async (req, res) => {
